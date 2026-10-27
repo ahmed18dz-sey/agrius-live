@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriUS Marketplace - US Agricultural & Machinery Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        function AgriUSApp() {
+            const [activeTab, setTab] = React.useState('home');
+            const [currency, setCurrency] = React.useState('USD');
+            const [cart, setCart] = React.useState([]);
+            const [buyerZip, setBuyerZip] = React.useState('');
+            const [freightCost, setFreightCost] = React.useState(null);
+            const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+            const equipmentList = [
+                { id: 1, title: "John Deere 8R 370 Row-Crop Tractor", price: 285000, location: "Iowa, US (ZIP: 50309)", image: "https://images.unsplash.com/photo-1592417817098-8f3d6eb26978?auto=format&fit=crop&w=800&q=80" },
+                { id: 2, title: "DJI Agras T40 Agricultural Spraying Drone", price: 22500, location: "California, US (ZIP: 90210)", image: "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80" },
+                { id: 3, title: "Valmont Pivot Irrigation System (1/4 Mile)", price: 45000, location: "Texas, US (ZIP: 75201)", image: "https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?auto=format&fit=crop&w=800&q=80" }
+            ];
+
+            const calculateFreight = () => {
+                if (!buyerZip) { alert('Please enter your US ZIP Code.'); return; }
+                setFreightCost(Math.floor(Math.random() * 800) + 350);
+            };
+
+            return (
+                <div className="min-h-screen">
+                    <header className="bg-emerald-900 text-white p-4 flex justify-between items-center shadow-md">
+                        <div className="flex items-center gap-2 cursor-pointer" onClick={() => setTab('home')}>
+                            <span className="text-2xl">🚜</span>
+                            <h1 className="text-xl font-black">AgriUS<span className="text-amber-400">Market</span></h1>
+                        </div>
+                        <nav className="flex gap-4 text-sm font-semibold">
+                            <button onClick={() => setTab('home')} className="hover:text-amber-300">Home</button>
+                            <button onClick={() => setTab('market')} className="hover:text-amber-300">Marketplace</button>
+                        </nav>
+                        <button onClick={() => setIsModalOpen(true)} className="bg-amber-500 text-slate-950 px-3 py-1.5 rounded-lg font-bold text-xs">
+                            🛒 Cart ({cart.length})
+                        </button>
+                    </header>
+
+                    <main className="max-w-7xl mx-auto p-6">
+                        {activeTab === 'home' && (
+                            <div className="bg-gradient-to-r from-emerald-800 to-slate-900 text-white p-12 rounded-2xl shadow-xl space-y-4">
+                                <span className="bg-amber-500 text-slate-950 text-xs font-bold px-3 py-1 rounded-full uppercase">US Agricultural B2B & B2C</span>
+                                <h2 className="text-4xl font-extrabold">The Ultimate Marketplace for American Agriculture</h2>
+                                <p className="text-slate-300 max-w-xl">Buy and sell heavy machinery, drones, and farm supplies directly from verified US dealers with secure Pay on Delivery & Freight Integration.</p>
+                                <button onClick={() => setTab('market')} className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-3 rounded-xl shadow">
+                                    Browse Equipment ➡️
+                                </button>
+                            </div>
+                        )}
+
+                        {activeTab === 'market' && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {equipmentList.map(item => (
+                                    <div key={item.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm flex flex-col justify-between">
+                                        <div>
+                                            <img src={item.image} alt={item.title} className="w-full h-48 object-cover" />
+                                            <div className="p-4 space-y-2">
+                                                <h3 className="font-bold text-slate-900">{item.title}</h3>
+                                                <p className="text-xs text-slate-500">📍 {item.location}</p>
+                                                <p className="text-emerald-600 font-bold">${item.price.toLocaleString()} USD</p>
+                                            </div>
+                                        </div>
+                                        <div className="p-4 pt-0">
+                                            <button onClick={() => { setCart([...cart, item]); setIsModalOpen(true); }} className="w-full bg-slate-900 hover:bg-emerald-600 text-white text-xs font-semibold py-2.5 rounded-xl transition">
+                                                Request Quote / Buy
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </main>
+
+                    {isModalOpen && (
+                        <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
+                            <div className="bg-white w-full max-w-md rounded-2xl p-6 space-y-4">
+                                <div className="flex justify-between items-center font-bold text-lg">
+                                    <h3>Order Checkout</h3>
+                                    <button onClick={() => setIsModalOpen(false)}>✕</button>
+                                </div>
+                                {cart.length === 0 ? <p className="text-sm text-slate-500">Your cart is empty.</p> : (
+                                    cart.map((i, idx) => (
+                                        <div key={idx} className="flex justify-between text-sm border-b pb-2">
+                                            <span>{i.title}</span>
+                                            <span className="font-bold text-emerald-600">${i.price.toLocaleString()}</span>
+                                        </div>
+                                    ))
+                                )}
+                                <div className="bg-slate-50 p-3 rounded-xl space-y-2">
+                                    <label className="text-xs font-bold uppercase">US Heavy Freight (ZIP Code)</label>
+                                    <div className="flex gap-2">
+                                        <input type="text" placeholder="Enter ZIP" value={buyerZip} onChange={e => setBuyerZip(e.target.value)} className="flex-1 p-2 border rounded-lg text-sm" />
+                                        <button onClick={calculateFreight} className="bg-slate-900 text-white text-xs px-4 py-2 rounded-lg">Calc</button>
+                                    </div>
+                                    {freightCost && <p className="text-xs text-emerald-700 font-bold">Estimated Freight: ${freightCost} USD</p>}
+                                </div>
+                                <button onClick={() => { alert('Order placed via Pay on Delivery!'); setCart([]); setIsModalOpen(false); }} className="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl">
+                                    Confirm Order
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<AgriUSApp />);
+    </script>
+</body>
+</html>
