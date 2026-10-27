@@ -1,830 +1,1623 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriUS Marketplace - Complete US Agricultural & Logistics Ecosystem</title>
+    <title>AgriUS Marketplace | Heavy Farm Machinery & Agricultural Equipment</title>
+    
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React & ReactDOM CDN -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- FontAwesome Icons for visual polish -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        agri: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        amberGold: '#d97706',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- React 18 & Babel CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+        }
+        .gradient-banner {
+            background: linear-gradient(135deg, #14532d 0%, #15803d 50%, #1e3a8a 100%);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-emerald-500 selection:text-white">
+<body class="h-full text-slate-800">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useMemo } = React;
 
-        function AgriUSApp() {
-            // Navigation & Tabs
-            const [activeTab, setActiveTab] = useState('home');
+        // --- MOCK INITIAL DATA ---
+        const INITIAL_LISTINGS = [
+            {
+                id: "AG-101",
+                title: "2022 John Deere 8R 410 Tractor",
+                category: "Tractors",
+                price: 345000,
+                location: "Des Moines, IA (ZIP 50301)",
+                zip: "50301",
+                hours: 840,
+                hp: 410,
+                condition: "Like New",
+                seller: "Midwest Agri Fleet Inc.",
+                verified: true,
+                status: "approved",
+                tier: "Enterprise",
+                image: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=800&q=80",
+                description: "Clean, single-owner 8R 410 with Signature Edition package, CommandPro transmission, and Duals. Full warranty remaining until late 2026."
+            },
+            {
+                id: "AG-102",
+                title: "2021 Case IH Axial-Flow 8250 Combine",
+                category: "Combines & Harvesting",
+                price: 389000,
+                location: "Fargo, ND (ZIP 58102)",
+                zip: "58102",
+                hours: 620,
+                hp: 480,
+                condition: "Excellent",
+                seller: "Red River Dealers Co.",
+                verified: true,
+                status: "approved",
+                tier: "Commercial",
+                image: "https://images.unsplash.com/photo-1595246140625-573b715d11dc?auto=format&fit=crop&w=800&q=80",
+                description: "Includes 40ft Draper Head, Luxury Cab, Automation package, and extended auger. Ready for wheat & corn."
+            },
+            {
+                id: "AG-103",
+                title: "2023 Kinze 4905 24-Row Planter",
+                category: "Tillage & Planting",
+                price: 215000,
+                location: "Lincoln, NE (ZIP 68502)",
+                zip: "68502",
+                hours: 120,
+                hp: 0,
+                condition: "Mint",
+                seller: "Cornhusker Ag Sales",
+                verified: true,
+                status: "approved",
+                tier: "Commercial",
+                image: "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&w=800&q=80",
+                description: "Electric drive, liquid fertilizer system, hydraulic weight transfer. Used for only one planting season."
+            },
+            {
+                id: "AG-104",
+                title: "2020 Apache AS1250 Self-Propelled Sprayer",
+                category: "Sprayers & Applicators",
+                price: 185000,
+                location: "Sioux Falls, SD (ZIP 57101)",
+                zip: "57101",
+                hours: 1100,
+                hp: 300,
+                condition: "Good",
+                seller: "Dakota Custom Ag",
+                verified: false,
+                status: "approved",
+                tier: "Verified Farmer",
+                image: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&q=80",
+                description: "1200-gallon stainless tank, 120ft aluminum boom, Raven Hawkeye PWM system."
+            },
+            {
+                id: "AG-105",
+                title: "2023 Brent 1198 Grain Cart",
+                category: "Grain Handling",
+                price: 92000,
+                location: "Peoria, IL (ZIP 61602)",
+                zip: "61602",
+                hours: 50,
+                hp: 0,
+                condition: "Brand New",
+                seller: "Heartland Heavy Equipment",
+                verified: true,
+                status: "approved",
+                tier: "Enterprise",
+                image: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=800&q=80",
+                description: "1100 bushel capacity, track system, auto-tarp, Digi-Star scale system."
+            },
+            {
+                id: "AG-106",
+                title: "2024 Kubota M8-201 Utility Tractor",
+                category: "Tractors",
+                price: 168000,
+                location: "Amarillo, TX (ZIP 79101)",
+                zip: "79101",
+                hours: 15,
+                hp: 200,
+                condition: "Brand New",
+                seller: "Panhandle Power Ag",
+                verified: false,
+                status: "pending",
+                tier: "Commercial",
+                image: "https://images.unsplash.com/photo-1530267981375-f0de937f5f13?auto=format&fit=crop&w=800&q=80",
+                description: "Dealer demo unit with full factory warranty. Semi-powershift, front suspension."
+            }
+        ];
+
+        const INITIAL_RFQS = [
+            { id: "RFQ-801", item: "Looking for 12-Row Corn Head (30-inch)", budget: "$45,000 - $60,000", buyer: "Valley Farms LLC", zip: "68102", status: "Active", responses: 4 },
+            { id: "RFQ-802", item: "Bulk Purchase: Certified Non-GMO Soybean Seed (500 Bags)", budget: "$30,000", buyer: "AgriCoop North", zip: "50010", status: "Active", responses: 2 },
+            { id: "RFQ-803", item: "Late Model 500HP Quadtrac Tractor Rental (3 Months)", budget: "$25,000", buyer: "Great Plains Grain", zip: "67202", status: "Closed", responses: 8 }
+        ];
+
+        function App() {
+            // --- STATE MANAGEMENT ---
+            const [listings, setListings] = useState(() => {
+                const saved = localStorage.getItem('agrius_listings');
+                return saved ? JSON.parse(saved) : INITIAL_LISTINGS;
+            });
+
+            const [rfqs, setRfqs] = useState(() => {
+                const saved = localStorage.getItem('agrius_rfqs');
+                return saved ? JSON.parse(saved) : INITIAL_RFQS;
+            });
+
+            const [currentUser, setCurrentUser] = useState(() => {
+                const saved = localStorage.getItem('agrius_user');
+                return saved ? JSON.parse(saved) : {
+                    name: "John Miller",
+                    email: "john@millerfarms.com",
+                    role: "Customer", // Options: "Customer", "Dealer", "Admin"
+                    tier: "Verified Farmer",
+                    verified: true,
+                    zip: "50301"
+                };
+            });
+
+            const [activeTab, setActiveTab] = useState('marketplace'); // marketplace, rfq, freight, subscriptions, dashboard, admin
             const [selectedCategory, setSelectedCategory] = useState('All');
             const [searchQuery, setSearchQuery] = useState('');
-            const [currency, setCurrency] = useState('USD');
-            const [exchangeRates] = useState({ USD: 1, EUR: 0.92, SAR: 3.75, AED: 3.67, DZD: 134.5 });
+            const [selectedListing, setSelectedListing] = useState(null);
+            
+            // Modal States
+            const [showPaymentModal, setShowPaymentModal] = useState(false);
+            const [paymentContext, setPaymentContext] = useState(null); // { type: 'subscription' | 'checkout', plan?: any, item?: any }
+            const [showSupabaseModal, setShowSupabaseModal] = useState(false);
+            const [showNewListingModal, setShowNewListingModal] = useState(false);
+            const [editingListing, setEditingListing] = useState(null);
 
-            // User & Auth State
-            const [currentUser, setCurrentUser] = useState({
-                name: "John Miller",
-                email: "john@midwestfarm.com",
-                type: "Verified Dealer", // Buyer, Verified Dealer, Freight Carrier
-                company: "Midwest Ag Solutions",
-                fein: "XX-XXX4829",
-                verified: true,
-                subscription: "Commercial Dealer", // Free Farmer, Commercial Dealer, Enterprise
-                freeListingsLeft: 3
-            });
-            const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-            const [authMode, setAuthMode] = useState('login'); // login or register
-            const [regForm, setRegForm] = useState({ name: '', email: '', type: 'Verified Dealer', company: '', fein: '' });
+            // Save to localStorage
+            useEffect(() => {
+                localStorage.setItem('agrius_listings', JSON.stringify(listings));
+            }, [listings]);
 
-            // Cart & Trade Assurance Checkout State
-            const [cart, setCart] = useState([]);
-            const [isCartModalOpen, setIsCartModalOpen] = useState(false);
-            const [buyerZip, setBuyerZip] = useState('');
-            const [checkoutFreight, setCheckoutFreight] = useState(0);
+            useEffect(() => {
+                localStorage.setItem('agrius_rfqs', JSON.stringify(rfqs));
+            }, [rfqs]);
 
-            // Logistics State
-            const [originZip, setOriginZip] = useState('50309');
-            const [destZip, setDestZip] = useState('75201');
-            const [weightClass, setWeightClass] = useState('flatbed'); // ltl, flatbed, oversize
-            const [freightQuote, setFreightQuote] = useState(null);
+            useEffect(() => {
+                localStorage.setItem('agrius_user', JSON.stringify(currentUser));
+            }, [currentUser]);
 
-            // RFQ Board State
-            const [isRfqModalOpen, setIsRfqModalOpen] = useState(false);
-            const [rfqList, setRfqList] = useState([
-                { id: 101, buyer: "Dakota Grain Co.", item: "100 Tons Bulk Urea NPK 46-0-0 Fertilizer", zip: "58102", budget: "$45,000", bids: 4, date: "2 hours ago" },
-                { id: 102, buyer: "Sunrise Ranch LLC", item: "Fleet of 3x Row-Crop Tractors (300+ HP)", zip: "79101", budget: "$750,000", bids: 7, date: "5 hours ago" },
-                { id: 103, buyer: "Green Valley Organics", item: "Solar Irrigation Pivot System (1/2 Mile Coverage)", zip: "93701", budget: "$110,000", bids: 2, date: "1 day ago" }
-            ]);
-            const [newRfq, setNewRfq] = useState({ item: '', zip: '', budget: '', company: '' });
+            // Filtered listings for public marketplace
+            const publicListings = useMemo(() => {
+                return listings.filter(item => {
+                    const matchesStatus = item.status === 'approved' || currentUser.role === 'Admin';
+                    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
+                    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                          item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                          item.seller.toLowerCase().includes(searchQuery.toLowerCase());
+                    return matchesStatus && matchesCategory && matchesSearch;
+                });
+            }, [listings, selectedCategory, searchQuery, currentUser]);
 
-            // Equipment Catalog State
-            const [equipmentList, setEquipmentList] = useState([
-                { id: 1, category: "Heavy Machinery", title: "John Deere 8R 370 Row-Crop Tractor", price: 285000, location: "Des Moines, IA (ZIP: 50309)", weight: "24,500 lbs", image: "https://images.unsplash.com/photo-1592417817098-8f3d6eb26978?auto=format&fit=crop&w=800&q=80", seller: "Midwest Farm Solutions", verified: true },
-                { id: 2, category: "Precision Ag", title: "DJI Agras T40 Agricultural Spraying Drone Kit", price: 22500, location: "Fresno, CA (ZIP: 93701)", weight: "140 lbs", image: "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80", seller: "AgriTech Innovations", verified: true },
-                { id: 3, category: "Irrigation & Solar", title: "Valmont Center Pivot Solar Irrigation Array", price: 54000, location: "Dallas, TX (ZIP: 75201)", weight: "8,200 lbs", image: "https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?auto=format&fit=crop&w=800&q=80", seller: "Texas Hydro Systems", verified: true },
-                { id: 4, category: "Seeds & Bulk Inputs", title: "Certified Hybrid Corn Seeds (Bulk 50-Ton Pallets)", price: 18500, location: "Peoria, IL (ZIP: 61601)", weight: "3,500 lbs", image: "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=800&q=80", seller: "Heartland Seeds Co.", verified: false },
-                { id: 5, category: "Livestock & Barn", title: "Automated Commercial Livestock Feeding Silos", price: 32000, location: "Omaha, NE (ZIP: 68102)", weight: "6,100 lbs", image: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&q=80", seller: "Nebraska AgriBarn", verified: true },
-                { id: 6, category: "Heavy Machinery", title: "Case IH Axial-Flow 8250 Combine Harvester", price: 310000, location: "Fargo, ND (ZIP: 58102)", weight: "38,000 lbs", image: "https://images.unsplash.com/photo-1589923188653-ba6fc58dcf48?auto=format&fit=crop&w=800&q=80", seller: "Dakota Heavy Equipment", verified: true }
-            ]);
-
-            // Add Listing State
-            const [isAddListingOpen, setIsAddListingOpen] = useState(false);
-            const [newListing, setNewListing] = useState({ title: '', category: 'Heavy Machinery', price: '', location: '', weight: '' });
-
-            // Currency Helper
-            const formatCurrency = (usdVal) => {
-                const rate = exchangeRates[currency] || 1;
-                const converted = usdVal * rate;
-                const symbol = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : currency === 'SAR' ? 'SAR ' : currency === 'AED' ? 'AED ' : 'DZD ';
-                return `${symbol}${converted.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-            };
-
-            // Calculate Freight Demo
-            const runFreightCalc = () => {
-                if (!originZip || !destZip) { alert("Please enter both Origin and Destination ZIP codes."); return; }
-                const dist = Math.abs(parseInt(originZip) - parseInt(destZip)) % 800 + 250;
-                let multiplier = weightClass === 'ltl' ? 1.2 : weightClass === 'flatbed' ? 2.8 : 4.5;
-                const estCost = Math.round(dist * multiplier);
-                setFreightQuote({ distance: dist, cost: estCost, carrier: dist > 500 ? "FedEx Freight / Heavy Haul" : "uShip Commercial Logistics" });
-            };
-
-            // Handle Add Listing
-            const handleAddListingSubmit = (e) => {
-                e.preventDefault();
-                if (!newListing.title || !newListing.price) return;
-                const item = {
-                    id: Date.now(),
+            // CRUD Handlers
+            const handleAddListing = (newListing) => {
+                const listingToAdd = {
                     ...newListing,
-                    price: Number(newListing.price),
-                    seller: currentUser.company || currentUser.name,
+                    id: `AG-${Math.floor(100 + Math.random() * 900)}`,
+                    status: currentUser.role === 'Admin' ? 'approved' : 'pending',
+                    seller: currentUser.name,
                     verified: currentUser.verified,
-                    image: "https://images.unsplash.com/photo-1589923188653-ba6fc58dcf48?auto=format&fit=crop&w=800&q=80"
+                    tier: currentUser.tier
                 };
-                setEquipmentList([item, ...equipmentList]);
-                setIsAddListingOpen(false);
-                setNewListing({ title: '', category: 'Heavy Machinery', price: '', location: '', weight: '' });
-                alert("Equipment listing published successfully under your verified seller account!");
+                setListings([listingToAdd, ...listings]);
+                setShowNewListingModal(false);
+                alert(currentUser.role === 'Admin' 
+                    ? "Listing published directly!" 
+                    : "Listing submitted! Pending Admin Approval.");
             };
 
-            // Handle RFQ Submit
-            const handleRfqSubmit = (e) => {
-                e.preventDefault();
-                if (!newRfq.item || !newRfq.budget) return;
-                const rfq = {
-                    id: Date.now(),
-                    buyer: newRfq.company || currentUser.company,
-                    item: newRfq.item,
-                    zip: newRfq.zip || "US Wide",
-                    budget: `$${Number(newRfq.budget).toLocaleString()}`,
-                    bids: 0,
-                    date: "Just now"
-                };
-                setRfqList([rfq, ...rfqList]);
-                setIsRfqModalOpen(false);
-                setNewRfq({ item: '', zip: '', budget: '', company: '' });
-                alert("RFQ Broadcasted to over 1,200 verified US dealers and manufacturers!");
+            const handleUpdateListing = (updated) => {
+                setListings(listings.map(l => l.id === updated.id ? updated : l));
+                setEditingListing(null);
             };
 
-            const filteredEquipment = equipmentList.filter(item => {
-                const matchesCat = selectedCategory === 'All' || item.category === selectedCategory;
-                const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || item.location.toLowerCase().includes(searchQuery.toLowerCase());
-                return matchesCat && matchesSearch;
-            });
+            const handleDeleteListing = (id) => {
+                if(confirm("Are you sure you want to delete this listing permanently?")) {
+                    setListings(listings.filter(l => l.id !== id));
+                    if (selectedListing?.id === id) setSelectedListing(null);
+                }
+            };
+
+            const handleApproveReject = (id, status) => {
+                setListings(listings.map(l => l.id === id ? { ...l, status } : l));
+            };
+
+            // Switch User Role Simulation
+            const handleUserRoleChange = (role) => {
+                const updated = {
+                    ...currentUser,
+                    role: role,
+                    tier: role === 'Admin' ? 'Enterprise' : (role === 'Dealer' ? 'Commercial' : 'Verified Farmer')
+                };
+                setCurrentUser(updated);
+            };
 
             return (
-                <div className="min-h-screen flex flex-col justify-between">
-                    <div>
-                        {/* 1. TOP TRUST BANNER & CURRENCY TOGGLE */}
-                        <div className="bg-emerald-950 text-emerald-100 text-xs py-2 px-4 border-b border-emerald-900">
-                            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
-                                <div className="flex items-center gap-3">
-                                    <span className="bg-emerald-800 text-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                        <i className="fa-solid fa-shield-halved mr-1"></i> Verified US Network
-                                    </span>
-                                    <span>AgriUS Trade Assurance: <strong>10% Escrow Deposit + Pay on Delivery</strong></span>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <span className="hidden md:inline text-emerald-300"><i className="fa-solid fa-truck-fast mr-1"></i> Heavy Freight API Connected</span>
-                                    <div className="flex items-center gap-1 bg-emerald-900/80 px-2 py-0.5 rounded border border-emerald-800">
-                                        <i className="fa-solid fa-globe text-emerald-400"></i>
-                                        <select 
-                                            value={currency} 
-                                            onChange={(e) => setCurrency(e.target.value)}
-                                            className="bg-transparent text-white font-bold cursor-pointer outline-none text-xs"
-                                        >
-                                            <option value="USD" className="bg-slate-900">USD ($)</option>
-                                            <option value="EUR" className="bg-slate-900">EUR (€)</option>
-                                            <option value="SAR" className="bg-slate-900">SAR (ر.س)</option>
-                                            <option value="AED" className="bg-slate-900">AED (د.إ)</option>
-                                            <option value="DZD" className="bg-slate-900">DZD (دج)</option>
-                                        </select>
-                                    </div>
-                                </div>
+                <div className="min-h-screen flex flex-col bg-slate-50">
+                    {/* Top Announcement Bar */}
+                    <div className="bg-slate-900 text-slate-300 text-xs py-2 px-4 flex justify-between items-center border-b border-slate-800">
+                        <div className="flex items-center space-x-4">
+                            <span><i className="fa-solid fa-shield-halved text-agri-500 mr-1"></i> AgriUS Escrow Protected</span>
+                            <span className="hidden md:inline"><i className="fa-solid fa-truck-fast text-blue-400 mr-1"></i> Freight Shipping nationwide</span>
+                        </div>
+                        <div className="flex items-center space-x-4">
+                            <span className="text-slate-400">View mode:</span>
+                            <div className="flex bg-slate-800 p-0.5 rounded text-[11px] font-semibold">
+                                <button 
+                                    onClick={() => handleUserRoleChange('Customer')} 
+                                    className={`px-2 py-0.5 rounded ${currentUser.role === 'Customer' ? 'bg-agri-600 text-white' : 'text-slate-400 hover:text-white'}`}>
+                                    Buyer/Farmer
+                                </button>
+                                <button 
+                                    onClick={() => handleUserRoleChange('Dealer')} 
+                                    className={`px-2 py-0.5 rounded ${currentUser.role === 'Dealer' ? 'bg-agri-600 text-white' : 'text-slate-400 hover:text-white'}`}>
+                                    Commercial Dealer
+                                </button>
+                                <button 
+                                    onClick={() => handleUserRoleChange('Admin')} 
+                                    className={`px-2 py-0.5 rounded ${currentUser.role === 'Admin' ? 'bg-amberGold text-white' : 'text-slate-400 hover:text-white'}`}>
+                                    <i className="fa-solid fa-user-gear mr-1"></i>Admin Mode
+                                </button>
                             </div>
                         </div>
-
-                        {/* 2. STICKY HEADER & NAVBAR */}
-                        <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-                            <div className="max-w-7xl mx-auto px-4 py-3.5 flex items-center justify-between gap-4">
-                                {/* Logo */}
-                                <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setActiveTab('home')}>
-                                    <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 text-white p-2.5 rounded-xl shadow-md flex items-center justify-center">
-                                        <i className="fa-solid fa-tractor text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <h1 className="text-xl font-black tracking-tight text-emerald-950">AgriUS<span className="text-amber-600">Market</span></h1>
-                                        <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-widest">US Agricultural & Freight Hub</p>
-                                    </div>
-                                </div>
-
-                                {/* Desktop Navigation */}
-                                <nav className="hidden lg:flex items-center gap-6 font-semibold text-sm text-slate-700">
-                                    <button onClick={() => setActiveTab('home')} className={`hover:text-emerald-600 transition ${activeTab === 'home' ? 'text-emerald-600 font-bold border-b-2 border-emerald-600 pb-1' : ''}`}>Home</button>
-                                    <button onClick={() => setActiveTab('market')} className={`hover:text-emerald-600 transition ${activeTab === 'market' ? 'text-emerald-600 font-bold border-b-2 border-emerald-600 pb-1' : ''}`}>Machinery & Supplies</button>
-                                    <button onClick={() => setActiveTab('logistics')} className={`hover:text-emerald-600 transition ${activeTab === 'logistics' ? 'text-emerald-600 font-bold border-b-2 border-emerald-600 pb-1' : ''}`}>Heavy Freight</button>
-                                    <button onClick={() => setActiveTab('subscriptions')} className={`hover:text-emerald-600 transition ${activeTab === 'subscriptions' ? 'text-emerald-600 font-bold border-b-2 border-emerald-600 pb-1' : ''}`}>Plans & Pricing</button>
-                                    <button onClick={() => setActiveTab('rfq')} className={`hover:text-emerald-600 transition ${activeTab === 'rfq' ? 'text-emerald-600 font-bold border-b-2 border-emerald-600 pb-1' : ''}`}>
-                                        RFQ Board <span className="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded-full ml-1">Live</span>
-                                    </button>
-                                </nav>
-
-                                {/* Action Buttons */}
-                                <div className="flex items-center gap-3">
-                                    {/* Cart */}
-                                    <button 
-                                        onClick={() => setIsCartModalOpen(true)}
-                                        className="relative bg-slate-100 hover:bg-slate-200 p-2.5 rounded-xl transition text-slate-700"
-                                        title="Shopping Cart"
-                                    >
-                                        <i className="fa-solid fa-cart-shopping text-base"></i>
-                                        {cart.length > 0 && (
-                                            <span className="absolute -top-1.5 -right-1.5 bg-amber-500 text-white text-[11px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-sm">
-                                                {cart.length}
-                                            </span>
-                                        )}
-                                    </button>
-
-                                    {/* Account Portal Button */}
-                                    <button 
-                                        onClick={() => setActiveTab('account')}
-                                        className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition ${activeTab === 'account' ? 'bg-emerald-700 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'}`}
-                                    >
-                                        <i className="fa-solid fa-circle-user text-emerald-600"></i>
-                                        <span className="hidden sm:inline">{currentUser.name.split(' ')[0]} ({currentUser.subscription})</span>
-                                    </button>
-
-                                    {/* List Equipment CTA */}
-                                    <button 
-                                        onClick={() => setIsAddListingOpen(true)}
-                                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-sm transition flex items-center gap-1.5"
-                                    >
-                                        <i className="fa-solid fa-plus"></i>
-                                        <span className="hidden sm:inline">List Equipment</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </header>
-
-                        {/* MAIN CONTENT ROUTER */}
-                        <main className="max-w-7xl mx-auto px-4 py-8">
-
-                            {/* TAB 1: HOME PAGE */}
-                            {activeTab === 'home' && (
-                                <div className="space-y-12">
-                                    {/* Hero Banner */}
-                                    <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 text-white p-8 md:p-16 shadow-2xl space-y-6 border border-emerald-800/40">
-                                        <div className="max-w-3xl space-y-4">
-                                            <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                                                <i className="fa-solid fa-award"></i> The Premiere US Agricultural B2B & B2C Marketplace
-                                            </div>
-                                            <h2 className="text-3xl sm:text-5xl font-black leading-tight tracking-tight">
-                                                Buy & Sell Heavy Farm Machinery, Bulk Inputs & Freight
-                                            </h2>
-                                            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-                                                Connect directly with verified US farm dealers, manufacturers, and heavy logistics carriers. Trade with full peace of mind using our **10% Escrow Deposit & Pay on Delivery** Trade Assurance.
-                                            </p>
-                                            <div className="flex flex-wrap gap-4 pt-2">
-                                                <button onClick={() => setActiveTab('market')} className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-6 py-3.5 rounded-xl shadow-lg transition flex items-center gap-2">
-                                                    Browse Machinery Store <i className="fa-solid fa-arrow-right"></i>
-                                                </button>
-                                                <button onClick={() => setIsRfqModalOpen(true)} className="bg-white/10 hover:bg-white/20 border border-white/30 text-white font-bold px-6 py-3.5 rounded-xl transition">
-                                                    Submit Bulk RFQ
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Categories Overview */}
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-end">
-                                            <div>
-                                                <h3 className="text-xl font-extrabold text-slate-900">Explore Agricultural Categories</h3>
-                                                <p className="text-xs text-slate-500">Comprehensive equipment, inputs, and technology for modern farms.</p>
-                                            </div>
-                                            <button onClick={() => setActiveTab('market')} className="text-xs font-bold text-emerald-600 hover:underline">View All Category Products ➡️</button>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                                            {[
-                                                { title: "Heavy Machinery", icon: "fa-tractor", count: "1,240+ Units", cat: "Heavy Machinery" },
-                                                { title: "Precision Ag & Drones", icon: "fa-drone", count: "320+ Systems", cat: "Precision Ag" },
-                                                { title: "Irrigation & Solar", icon: "fa-faucet-drip", count: "580+ Kits", cat: "Irrigation & Solar" },
-                                                { title: "Seeds & Bulk Inputs", icon: "fa-seedling", count: "2,100+ Tons", cat: "Seeds & Bulk Inputs" },
-                                                { title: "Livestock & Barn", icon: "fa-warehouse", count: "890+ Products", cat: "Livestock & Barn" }
-                                            ].map((c, i) => (
-                                                <div 
-                                                    key={i} 
-                                                    onClick={() => { setSelectedCategory(c.cat); setActiveTab('market'); }}
-                                                    className="bg-white p-5 rounded-2xl border border-slate-200 hover:border-emerald-500 hover:shadow-md transition cursor-pointer text-center space-y-2 group"
-                                                >
-                                                    <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mx-auto text-xl group-hover:bg-emerald-600 group-hover:text-white transition">
-                                                        <i className={`fa-solid ${c.icon}`}></i>
-                                                    </div>
-                                                    <h4 className="font-bold text-slate-900 text-sm">{c.title}</h4>
-                                                    <p className="text-[11px] text-slate-400 font-medium">{c.count}</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Value Pillars */}
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                                            <div className="w-10 h-10 bg-amber-100 text-amber-700 rounded-xl flex items-center justify-center font-bold text-lg">🛡️</div>
-                                            <h4 className="font-bold text-slate-900 text-base">Trade Assurance Escrow</h4>
-                                            <p className="text-xs text-slate-500 leading-relaxed">Pay a small 10% deposit online into secure escrow. Inspect your machinery on your farm before releasing the 90% balance.</p>
-                                        </div>
-                                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                                            <div className="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center font-bold text-lg">🚛</div>
-                                            <h4 className="font-bold text-slate-900 text-base">ZIP-to-ZIP Heavy Logistics</h4>
-                                            <p className="text-xs text-slate-500 leading-relaxed">Instant automated shipping calculation for flatbed trailers, LTL freight, and oversized machinery across all US states.</p>
-                                        </div>
-                                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                                            <div className="w-10 h-10 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center font-bold text-lg">✅</div>
-                                            <h4 className="font-bold text-slate-900 text-base">FEIN & Tax ID Verification</h4>
-                                            <p className="text-xs text-slate-500 leading-relaxed">Sellers and dealers undergo rigorous background checks to guarantee certified equipment listings and genuine warranties.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* TAB 2: MACHINERY STORE & CATALOG */}
-                            {activeTab === 'market' && (
-                                <div className="space-y-6">
-                                    {/* Filter Header */}
-                                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-                                        <div className="relative w-full md:w-96">
-                                            <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
-                                            <input 
-                                                type="text" 
-                                                placeholder="Search John Deere, Drones, Solar, Seeds..." 
-                                                value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
-                                                className="w-full pl-10 pr-4 py-2 border rounded-xl text-sm outline-none focus:border-emerald-500"
-                                            />
-                                        </div>
-
-                                        {/* Category Tabs */}
-                                        <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
-                                            {['All', 'Heavy Machinery', 'Precision Ag', 'Irrigation & Solar', 'Seeds & Bulk Inputs', 'Livestock & Barn'].map((cat) => (
-                                                <button 
-                                                    key={cat}
-                                                    onClick={() => setSelectedCategory(cat)}
-                                                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${selectedCategory === cat ? 'bg-emerald-700 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-                                                >
-                                                    {cat}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Products Grid */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {filteredEquipment.map((item) => (
-                                            <div key={item.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between">
-                                                <div>
-                                                    <div className="relative h-52 bg-slate-100 overflow-hidden">
-                                                        <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                                                        {item.verified && (
-                                                            <span className="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1">
-                                                                <i className="fa-solid fa-circle-check"></i> Verified Dealer
-                                                            </span>
-                                                        )}
-                                                        <span className="absolute bottom-3 right-3 bg-slate-900/90 backdrop-blur-md text-white text-xs font-black px-3 py-1.5 rounded-xl">
-                                                            {formatCurrency(item.price)}
-                                                        </span>
-                                                    </div>
-
-                                                    <div className="p-5 space-y-2">
-                                                        <span className="text-[10px] font-black uppercase text-emerald-700 tracking-wider bg-emerald-50 px-2 py-0.5 rounded-md">
-                                                            {item.category}
-                                                        </span>
-                                                        <h3 className="font-bold text-slate-900 text-base leading-snug">{item.title}</h3>
-                                                        <div className="space-y-1 text-xs text-slate-500 pt-1">
-                                                            <p><i className="fa-solid fa-location-dot text-emerald-600 w-4"></i> {item.location}</p>
-                                                            <p><i className="fa-solid fa-weight-hanging text-slate-400 w-4"></i> Weight: <strong>{item.weight}</strong></p>
-                                                            <p><i className="fa-solid fa-store text-slate-400 w-4"></i> Seller: {item.seller}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="p-5 pt-0">
-                                                    <button 
-                                                        onClick={() => { setCart([...cart, item]); setIsCartModalOpen(true); }}
-                                                        className="w-full bg-slate-900 hover:bg-emerald-600 text-white text-xs font-bold py-3 rounded-xl transition flex items-center justify-center gap-2"
-                                                    >
-                                                        <i className="fa-solid fa-cart-plus"></i> Buy with 10% Escrow Deposit
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* TAB 3: LOGISTICS & HEAVY FREIGHT */}
-                            {activeTab === 'logistics' && (
-                                <div className="max-w-3xl mx-auto space-y-8">
-                                    <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
-                                        <div className="space-y-2 border-b border-slate-100 pb-4">
-                                            <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase">ZIP-to-ZIP Freight API</span>
-                                            <h2 className="text-2xl font-black text-slate-900">US Heavy Freight & Haulage Calculator</h2>
-                                            <p className="text-slate-500 text-xs">Simulate real-time shipping costs for oversized tractors, heavy combines, and bulk seed pallets across all 50 US States.</p>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-xs font-extrabold uppercase text-slate-700 mb-1">Origin ZIP Code</label>
-                                                <input 
-                                                    type="text" 
-                                                    value={originZip} 
-                                                    onChange={(e) => setOriginZip(e.target.value)}
-                                                    placeholder="e.g. 50309 (Iowa)" 
-                                                    className="w-full p-3 border rounded-xl text-sm outline-none focus:border-emerald-600"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-extrabold uppercase text-slate-700 mb-1">Destination ZIP Code</label>
-                                                <input 
-                                                    type="text" 
-                                                    value={destZip} 
-                                                    onChange={(e) => setDestZip(e.target.value)}
-                                                    placeholder="e.g. 75201 (Texas)" 
-                                                    className="w-full p-3 border rounded-xl text-sm outline-none focus:border-emerald-600"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-xs font-extrabold uppercase text-slate-700 mb-1">Freight Weight & Class</label>
-                                            <select 
-                                                value={weightClass} 
-                                                onChange={(e) => setWeightClass(e.target.value)}
-                                                className="w-full p-3 border rounded-xl text-sm bg-white outline-none focus:border-emerald-600"
-                                            >
-                                                <option value="ltl">LTL Freight (Under 4,000 lbs - Pallets/Drones/Small Pumps)</option>
-                                                <option value="flatbed">Full Flatbed Heavy Haul (4,000 - 30,000 lbs - Row Crop Tractors)</option>
-                                                <option value="oversize">Oversized Machinery Permits (30,000+ lbs - Large Combines)</option>
-                                            </select>
-                                        </div>
-
-                                        <button 
-                                            onClick={runFreightCalc}
-                                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl shadow-md transition flex items-center justify-center gap-2"
-                                        >
-                                            <i className="fa-solid fa-calculator"></i> Calculate Carrier Rate
-                                        </button>
-
-                                        {freightQuote && (
-                                            <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl text-center space-y-2">
-                                                <span className="text-[10px] uppercase font-bold text-emerald-800 tracking-wider">Estimated Shipping Rate</span>
-                                                <h3 className="text-3xl font-black text-emerald-950">${freightQuote.cost.toLocaleString()} USD</h3>
-                                                <div className="text-xs text-slate-600 space-y-1 pt-1">
-                                                    <p>Distance: <strong>~{freightQuote.distance} miles</strong> | Preferred Carrier: <strong>{freightQuote.carrier}</strong></p>
-                                                    <p className="text-[11px] text-slate-400">Includes cargo transit insurance and roadside permits.</p>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* TAB 4: SUBSCRIPTION PLANS SYSTEM */}
-                            {activeTab === 'subscriptions' && (
-                                <div className="space-y-8 max-w-5xl mx-auto">
-                                    <div className="text-center space-y-2">
-                                        <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase">Vendor & Farmer Memberships</span>
-                                        <h2 className="text-3xl font-black text-slate-900">Choose Your Agricultural Growth Tier</h2>
-                                        <p className="text-slate-500 text-sm max-w-xl mx-auto">Get verified to unlock free equipment listings, direct RFQ broadcasts, and lower platform commission rates.</p>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        {/* Tier 1 */}
-                                        <div className={`bg-white p-6 rounded-3xl border ${currentUser.subscription === 'Free Farmer' ? 'border-2 border-emerald-600 ring-2 ring-emerald-500/20' : 'border-slate-200'} shadow-sm space-y-6 flex flex-col justify-between`}>
-                                            <div className="space-y-4">
-                                                <div className="space-y-1">
-                                                    <h3 className="font-extrabold text-slate-900 text-lg">Verified Farmer</h3>
-                                                    <p className="text-xs text-slate-500">For individual farmers selling excess machinery.</p>
-                                                </div>
-                                                <div className="text-3xl font-black text-slate-900">$0 <span className="text-xs font-normal text-slate-400">/ month</span></div>
-                                                <ul className="text-xs text-slate-600 space-y-2.5">
-                                                    <li><i className="fa-solid fa-check text-emerald-600 mr-2"></i> <strong>3 Free Equipment Listings</strong></li>
-                                                    <li><i className="fa-solid fa-check text-emerald-600 mr-2"></i> Access to Public RFQ Feed</li>
-                                                    <li><i className="fa-solid fa-check text-emerald-600 mr-2"></i> Pay on Delivery Escrow Protection</li>
-                                                    <li className="text-slate-400"><i className="fa-solid fa-xmark mr-2"></i> Heavy Freight API Integration</li>
-                                                </ul>
-                                            </div>
-                                            <button 
-                                                onClick={() => { setCurrentUser({...currentUser, subscription: 'Free Farmer'}); alert("Switched to Free Farmer Plan!"); }}
-                                                className="w-full py-3 rounded-xl font-bold text-xs border border-slate-300 hover:bg-slate-50"
-                                            >
-                                                {currentUser.subscription === 'Free Farmer' ? 'Current Plan' : 'Select Free Plan'}
-                                            </button>
-                                        </div>
-
-                                        {/* Tier 2 */}
-                                        <div className={`bg-slate-900 text-white p-6 rounded-3xl border ${currentUser.subscription === 'Commercial Dealer' ? 'border-2 border-amber-500 ring-4 ring-amber-500/20' : 'border-slate-800'} shadow-xl space-y-6 flex flex-col justify-between relative overflow-hidden`}>
-                                            <div className="absolute top-4 right-4 bg-amber-500 text-slate-950 text-[9px] font-black px-2.5 py-1 rounded-full uppercase">Most Popular</div>
-                                            <div className="space-y-4">
-                                                <div className="space-y-1">
-                                                    <h3 className="font-extrabold text-white text-lg">Commercial Dealer</h3>
-                                                    <p className="text-xs text-slate-400">For agricultural dealerships and suppliers.</p>
-                                                </div>
-                                                <div className="text-3xl font-black text-amber-400">$199 <span className="text-xs font-normal text-slate-400">/ month</span></div>
-                                                <ul className="text-xs text-slate-300 space-y-2.5">
-                                                    <li><i className="fa-solid fa-check text-amber-400 mr-2"></i> <strong>Unlimited Machinery Listings</strong></li>
-                                                    <li><i className="fa-solid fa-check text-amber-400 mr-2"></i> Priority RFQ Broadcast Notifications</li>
-                                                    <li><i className="fa-solid fa-check text-amber-400 mr-2"></i> Heavy Freight API Calculator Included</li>
-                                                    <li><i className="fa-solid fa-check text-amber-400 mr-2"></i> <strong>Verified Dealer Badge</strong></li>
-                                                </ul>
-                                            </div>
-                                            <button 
-                                                onClick={() => { setCurrentUser({...currentUser, subscription: 'Commercial Dealer'}); alert("Upgraded to Commercial Dealer!"); }}
-                                                className="w-full py-3 rounded-xl font-bold text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 transition"
-                                            >
-                                                {currentUser.subscription === 'Commercial Dealer' ? 'Active Subscription' : 'Upgrade to $199/mo'}
-                                            </button>
-                                        </div>
-
-                                        {/* Tier 3 */}
-                                        <div className={`bg-white p-6 rounded-3xl border ${currentUser.subscription === 'Enterprise' ? 'border-2 border-emerald-600' : 'border-slate-200'} shadow-sm space-y-6 flex flex-col justify-between`}>
-                                            <div className="space-y-4">
-                                                <div className="space-y-1">
-                                                    <h3 className="font-extrabold text-slate-900 text-lg">Enterprise Manufacturer</h3>
-                                                    <p className="text-xs text-slate-500">For seed brands, drone makers & OEM factories.</p>
-                                                </div>
-                                                <div className="text-3xl font-black text-slate-900">$499 <span className="text-xs font-normal text-slate-400">/ month</span></div>
-                                                <ul className="text-xs text-slate-600 space-y-2.5">
-                                                    <li><i className="fa-solid fa-check text-emerald-600 mr-2"></i> Featured Homepage Placement</li>
-                                                    <li><i className="fa-solid fa-check text-emerald-600 mr-2"></i> Direct Bulk Seed/Fertilizer RFQ Routing</li>
-                                                    <li><i className="fa-solid fa-check text-emerald-600 mr-2"></i> Dedicated Account Manager</li>
-                                                    <li><i className="fa-solid fa-check text-emerald-600 mr-2"></i> <strong>0% Commission on First $100k</strong></li>
-                                                </ul>
-                                            </div>
-                                            <button 
-                                                onClick={() => { setCurrentUser({...currentUser, subscription: 'Enterprise'}); alert("Upgraded to Enterprise Tier!"); }}
-                                                className="w-full py-3 rounded-xl font-bold text-xs border border-slate-300 hover:bg-slate-50"
-                                            >
-                                                {currentUser.subscription === 'Enterprise' ? 'Active Enterprise' : 'Select Enterprise'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* TAB 5: RFQ BOARD */}
-                            {activeTab === 'rfq' && (
-                                <div className="space-y-6 max-w-4xl mx-auto">
-                                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
-                                        <div>
-                                            <h2 className="text-xl font-black text-slate-900">Live Request for Quotation (RFQ) Feed</h2>
-                                            <p className="text-xs text-slate-500">Brokers and farmers post bulk needs. Verified dealers submit live bids.</p>
-                                        </div>
-                                        <button 
-                                            onClick={() => setIsRfqModalOpen(true)}
-                                            className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs shadow-sm transition flex items-center gap-1.5 whitespace-nowrap"
-                                        >
-                                            <i className="fa-solid fa-bullhorn"></i> Post Bulk RFQ
-                                        </button>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        {rfqList.map((rfq) => (
-                                            <div key={rfq.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded">ZIP: {rfq.zip}</span>
-                                                        <span className="text-slate-400 text-xs">{rfq.date}</span>
-                                                    </div>
-                                                    <h3 className="font-bold text-slate-900 text-base">{rfq.item}</h3>
-                                                    <p className="text-xs text-slate-500">Buyer: <strong>{rfq.buyer}</strong> | Target Budget: <span className="text-emerald-600 font-bold">{rfq.budget}</span></p>
-                                                </div>
-                                                <button 
-                                                    onClick={() => alert(`Bid form opened for RFQ #${rfq.id}. As a Verified Dealer, your bid will be delivered directly.`)}
-                                                    className="bg-slate-900 hover:bg-emerald-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition whitespace-nowrap"
-                                                >
-                                                    Submit Bid ({rfq.bids} Bids)
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* TAB 6: CUSTOMER PORTAL & ACCOUNT DASHBOARD */}
-                            {activeTab === 'account' && (
-                                <div className="space-y-8 max-w-4xl mx-auto">
-                                    {/* Account Header */}
-                                    <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center text-2xl font-black">
-                                                {currentUser.name.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <h2 className="text-xl font-extrabold text-slate-900">{currentUser.name}</h2>
-                                                    {currentUser.verified && <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">✓ Verified</span>}
-                                                </div>
-                                                <p className="text-xs text-slate-500">{currentUser.company} | FEIN: {currentUser.fein}</p>
-                                                <p className="text-xs text-emerald-600 font-bold pt-0.5">Tier: {currentUser.subscription}</p>
-                                            </div>
-                                        </div>
-                                        <button 
-                                            onClick={() => setIsAuthModalOpen(true)}
-                                            className="text-xs border border-slate-300 hover:bg-slate-100 px-4 py-2 rounded-xl font-bold"
-                                        >
-                                            Switch Account / Login
-                                        </button>
-                                    </div>
-
-                                    {/* Owner Revenue Dashboard Integration */}
-                                    <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-xl space-y-4">
-                                        <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-                                            <div>
-                                                <h3 className="font-extrabold text-lg text-white">Owner Revenue & Platform Analytics</h3>
-                                                <p className="text-xs text-slate-400">Real-time marketplace commission & subscription metric simulator.</p>
-                                            </div>
-                                            <span className="bg-emerald-500/20 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/30">Live System</span>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                                            <div className="bg-slate-800/80 p-4 rounded-2xl border border-slate-700">
-                                                <span className="text-[10px] text-slate-400 uppercase font-bold">Est. Monthly Platform Revenue</span>
-                                                <h4 className="text-2xl font-black text-amber-400">$49,150 USD</h4>
-                                            </div>
-                                            <div className="bg-slate-800/80 p-4 rounded-2xl border border-slate-700">
-                                                <span className="text-[10px] text-slate-400 uppercase font-bold">Active Dealer Subscriptions</span>
-                                                <h4 className="text-2xl font-black text-white">124 Dealers</h4>
-                                            </div>
-                                            <div className="bg-slate-800/80 p-4 rounded-2xl border border-slate-700">
-                                                <span className="text-[10px] text-slate-400 uppercase font-bold">Platform Transaction Fee</span>
-                                                <h4 className="text-2xl font-black text-emerald-400">3.5% Commission</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Listings & Orders Management */}
-                                    <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-                                        <h3 className="font-bold text-slate-900 text-base">My Active Equipment Listings ({equipmentList.length})</h3>
-                                        <div className="divide-y divide-slate-100">
-                                            {equipmentList.slice(0, 3).map((item) => (
-                                                <div key={item.id} className="py-3 flex justify-between items-center text-xs">
-                                                    <div>
-                                                        <p className="font-bold text-slate-800">{item.title}</p>
-                                                        <p className="text-slate-400">{item.location} | {formatCurrency(item.price)}</p>
-                                                    </div>
-                                                    <span className="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">Active</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                        </main>
                     </div>
 
-                    {/* MODAL 1: CHECKOUT & ESCROW CART */}
-                    {isCartModalOpen && (
-                        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                            <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 space-y-6">
-                                <div className="flex justify-between items-center border-b pb-3">
-                                    <h3 className="font-black text-lg text-slate-900">Trade Assurance Checkout</h3>
-                                    <button onClick={() => setIsCartModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-                                </div>
-
-                                {cart.length === 0 ? (
-                                    <p className="text-xs text-slate-500 py-4 text-center">Your cart is empty. Add equipment from the marketplace store.</p>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {cart.map((i, idx) => (
-                                            <div key={idx} className="flex justify-between items-center text-xs border-b pb-2">
-                                                <div>
-                                                    <p className="font-bold text-slate-800">{i.title}</p>
-                                                    <p className="text-slate-400">{i.location}</p>
-                                                </div>
-                                                <span className="font-bold text-emerald-600">{formatCurrency(i.price)}</span>
-                                            </div>
-                                        ))}
-
-                                        <div className="bg-slate-50 p-4 rounded-2xl space-y-2 border border-slate-100">
-                                            <div className="flex justify-between text-xs font-bold text-slate-700">
-                                                <span>Total Equipment Value:</span>
-                                                <span>{formatCurrency(cart.reduce((a, b) => a + b.price, 0))}</span>
-                                            </div>
-                                            <div className="flex justify-between text-xs text-emerald-700 font-bold bg-emerald-100/50 p-2 rounded-lg">
-                                                <span>10% Required Online Deposit (Escrow):</span>
-                                                <span>{formatCurrency(cart.reduce((a, b) => a + b.price, 0) * 0.1)}</span>
-                                            </div>
-                                            <p className="text-[10px] text-slate-400 pt-1">
-                                                * The remaining 90% balance is payable on-site after machinery delivery and farm inspection.
-                                            </p>
+                    {/* Navigation Bar */}
+                    <nav className="sticky top-0 z-40 glass-nav border-b border-slate-200 shadow-sm">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex justify-between h-16">
+                                <div className="flex items-center space-x-8">
+                                    <div className="flex items-center cursor-pointer" onClick={() => setActiveTab('marketplace')}>
+                                        <div className="bg-agri-700 text-white p-2 rounded-xl mr-2 shadow">
+                                            <i className="fa-solid fa-wheat-awn text-xl"></i>
                                         </div>
-
-                                        <button 
-                                            onClick={() => {
-                                                alert("Order placed under Trade Assurance Protection! Your 10% deposit is held securely in Escrow.");
-                                                setCart([]);
-                                                setIsCartModalOpen(false);
-                                            }}
-                                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl shadow-lg text-xs"
-                                        >
-                                            Confirm Order & Pay 10% Escrow Deposit
-                                        </button>
+                                        <div>
+                                            <span className="font-black text-2xl tracking-tight text-slate-900">Agri<span className="text-agri-600">US</span></span>
+                                            <span className="block text-[10px] uppercase font-bold tracking-widest text-slate-400 -mt-1">Commercial Marketplace</span>
+                                        </div>
                                     </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
 
-                    {/* MODAL 2: ADD EQUIPMENT LISTING */}
-                    {isAddListingOpen && (
-                        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-4">
-                                <div className="flex justify-between items-center border-b pb-2">
-                                    <h3 className="font-black text-lg text-slate-900">List Equipment Free</h3>
-                                    <button onClick={() => setIsAddListingOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+                                    <div className="hidden lg:flex space-x-1">
+                                        {[
+                                            { id: 'marketplace', label: 'Marketplace', icon: 'fa-store' },
+                                            { id: 'rfq', label: 'RFQ Board', icon: 'fa-file-signature' },
+                                            { id: 'freight', label: 'Freight Calculator', icon: 'fa-calculator' },
+                                            { id: 'subscriptions', label: 'Membership Plans', icon: 'fa-gem' },
+                                        ].map(tab => (
+                                            <button
+                                                key={tab.id}
+                                                onClick={() => setActiveTab(tab.id)}
+                                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
+                                                    activeTab === tab.id 
+                                                        ? 'bg-agri-50 text-agri-700 font-semibold' 
+                                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                                                }`}
+                                            >
+                                                <i className={`fa-solid ${tab.icon} text-xs`}></i>
+                                                <span>{tab.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                                <form onSubmit={handleAddListingSubmit} className="space-y-3">
-                                    <input 
-                                        type="text" required placeholder="Equipment Title (e.g. 2022 John Deere 8R)" 
-                                        value={newListing.title} onChange={(e) => setNewListing({...newListing, title: e.target.value})}
-                                        className="w-full p-3 border rounded-xl text-xs outline-none focus:border-emerald-600"
-                                    />
-                                    <select 
-                                        value={newListing.category} onChange={(e) => setNewListing({...newListing, category: e.target.value})}
-                                        className="w-full p-3 border rounded-xl text-xs bg-white outline-none focus:border-emerald-600"
-                                    >
-                                        <option value="Heavy Machinery">Heavy Machinery</option>
-                                        <option value="Precision Ag">Precision Ag</option>
-                                        <option value="Irrigation & Solar">Irrigation & Solar</option>
-                                        <option value="Seeds & Bulk Inputs">Seeds & Bulk Inputs</option>
-                                        <option value="Livestock & Barn">Livestock & Barn</option>
-                                    </select>
-                                    <input 
-                                        type="number" required placeholder="Price in USD ($)" 
-                                        value={newListing.price} onChange={(e) => setNewListing({...newListing, price: e.target.value})}
-                                        className="w-full p-3 border rounded-xl text-xs outline-none focus:border-emerald-600"
-                                    />
-                                    <input 
-                                        type="text" required placeholder="Location & ZIP (e.g. Des Moines, IA 50309)" 
-                                        value={newListing.location} onChange={(e) => setNewListing({...newListing, location: e.target.value})}
-                                        className="w-full p-3 border rounded-xl text-xs outline-none focus:border-emerald-600"
-                                    />
-                                    <input 
-                                        type="text" required placeholder="Approx Weight (e.g. 24,000 lbs)" 
-                                        value={newListing.weight} onChange={(e) => setNewListing({...newListing, weight: e.target.value})}
-                                        className="w-full p-3 border rounded-xl text-xs outline-none focus:border-emerald-600"
-                                    />
-                                    <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3.5 rounded-xl text-xs shadow-md">
-                                        Publish Verified Listing
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    )}
 
-                    {/* MODAL 3: RFQ BROADCAST */}
-                    {isRfqModalOpen && (
-                        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-4">
-                                <div className="flex justify-between items-center border-b pb-2">
-                                    <h3 className="font-black text-lg text-slate-900">Post Bulk RFQ Request</h3>
-                                    <button onClick={() => setIsRfqModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-                                </div>
-                                <form onSubmit={handleRfqSubmit} className="space-y-3">
-                                    <input 
-                                        type="text" required placeholder="Company or Farm Name" 
-                                        value={newRfq.company} onChange={(e) => setNewRfq({...newRfq, company: e.target.value})}
-                                        className="w-full p-3 border rounded-xl text-xs outline-none focus:border-emerald-600"
-                                    />
-                                    <input 
-                                        type="text" required placeholder="Equipment / Bulk Supply Details" 
-                                        value={newRfq.item} onChange={(e) => setNewRfq({...newRfq, item: e.target.value})}
-                                        className="w-full p-3 border rounded-xl text-xs outline-none focus:border-emerald-600"
-                                    />
-                                    <input 
-                                        type="text" required placeholder="Delivery ZIP Code" 
-                                        value={newRfq.zip} onChange={(e) => setNewRfq({...newRfq, zip: e.target.value})}
-                                        className="w-full p-3 border rounded-xl text-xs outline-none focus:border-emerald-600"
-                                    />
-                                    <input 
-                                        type="number" required placeholder="Target Budget in USD ($)" 
-                                        value={newRfq.budget} onChange={(e) => setNewRfq({...newRfq, budget: e.target.value})}
-                                        className="w-full p-3 border rounded-xl text-xs outline-none focus:border-emerald-600"
-                                    />
-                                    <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-3.5 rounded-xl text-xs shadow-md">
-                                        Broadcast RFQ to Dealers
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* MODAL 4: AUTH & PORTAL REGISTRATION */}
-                    {isAuthModalOpen && (
-                        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                            <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6 space-y-4">
-                                <div className="flex justify-between items-center border-b pb-2">
-                                    <h3 className="font-black text-lg text-slate-900">{authMode === 'login' ? 'Portal Login' : 'Register Account'}</h3>
-                                    <button onClick={() => setIsAuthModalOpen(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-                                </div>
-                                <div className="space-y-3">
-                                    <input type="email" placeholder="Email Address" defaultValue={currentUser.email} className="w-full p-3 border rounded-xl text-xs outline-none" />
-                                    <input type="password" placeholder="Password" defaultValue="••••••••" className="w-full p-3 border rounded-xl text-xs outline-none" />
+                                <div className="flex items-center space-x-3">
                                     <button 
-                                        onClick={() => { alert("Logged in successfully!"); setIsAuthModalOpen(false); }}
-                                        className="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl text-xs"
+                                        onClick={() => setShowNewListingModal(true)}
+                                        className="bg-agri-600 hover:bg-agri-700 text-white font-semibold px-4 py-2 rounded-lg shadow-sm text-sm transition flex items-center space-x-2"
                                     >
-                                        Access Portal
+                                        <i className="fa-solid fa-plus"></i>
+                                        <span>Sell Equipment</span>
+                                    </button>
+
+                                    {/* Admin Direct Access Pill */}
+                                    {currentUser.role === 'Admin' && (
+                                        <button 
+                                            onClick={() => setActiveTab('admin')}
+                                            className={`px-3 py-2 rounded-lg text-sm font-semibold flex items-center space-x-1 ${
+                                                activeTab === 'admin' ? 'bg-amber-600 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                                            }`}
+                                        >
+                                            <i className="fa-solid fa-screwdriver-wrench"></i>
+                                            <span>Admin Panel</span>
+                                            {listings.filter(l => l.status === 'pending').length > 0 && (
+                                                <span className="ml-1 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                                                    {listings.filter(l => l.status === 'pending').length}
+                                                </span>
+                                            )}
+                                        </button>
+                                    )}
+
+                                    {/* User Profile Button */}
+                                    <button 
+                                        onClick={() => setActiveTab('dashboard')}
+                                        className="flex items-center space-x-2 p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 transition"
+                                    >
+                                        <div className="w-8 h-8 bg-slate-800 text-white rounded-full flex items-center justify-center font-bold text-xs">
+                                            {currentUser.name.split(' ').map(n=>n[0]).join('')}
+                                        </div>
+                                        <div className="text-left hidden sm:block text-xs">
+                                            <div className="font-semibold text-slate-800 leading-tight">{currentUser.name}</div>
+                                            <div className="text-agri-600 font-medium">{currentUser.tier}</div>
+                                        </div>
                                     </button>
                                 </div>
                             </div>
                         </div>
+                    </nav>
+
+                    {/* MAIN CONTENT AREA */}
+                    <main className="flex-grow">
+                        {activeTab === 'marketplace' && (
+                            <MarketplaceView 
+                                listings={publicListings} 
+                                categories={['All', 'Tractors', 'Combines & Harvesting', 'Tillage & Planting', 'Sprayers & Applicators', 'Grain Handling']}
+                                selectedCategory={selectedCategory}
+                                setSelectedCategory={setSelectedCategory}
+                                searchQuery={searchQuery}
+                                setSearchQuery={setSearchQuery}
+                                onSelectListing={(item) => setSelectedListing(item)}
+                                onOpenFreight={() => setActiveTab('freight')}
+                            />
+                        )}
+
+                        {activeTab === 'rfq' && (
+                            <RFQBoardView rfqs={rfqs} setRfqs={setRfqs} currentUser={currentUser} />
+                        )}
+
+                        {activeTab === 'freight' && (
+                            <FreightCalculatorView listings={listings} />
+                        )}
+
+                        {activeTab === 'subscriptions' && (
+                            <SubscriptionsView 
+                                currentUser={currentUser} 
+                                onSelectPlan={(plan) => {
+                                    setPaymentContext({ type: 'subscription', plan });
+                                    setShowPaymentModal(true);
+                                }} 
+                            />
+                        )}
+
+                        {activeTab === 'dashboard' && (
+                            <UserDashboardView 
+                                currentUser={currentUser} 
+                                listings={listings.filter(l => l.seller === currentUser.name)}
+                                onUpgrade={() => setActiveTab('subscriptions')}
+                                onNewListing={() => setShowNewListingModal(true)}
+                            />
+                        )}
+
+                        {activeTab === 'admin' && (
+                            <AdminPanelView 
+                                listings={listings}
+                                rfqs={rfqs}
+                                onApproveReject={handleApproveReject}
+                                onDelete={handleDeleteListing}
+                                onEdit={(item) => setEditingListing(item)}
+                                onOpenSupabase={() => setShowSupabaseModal(true)}
+                            />
+                        )}
+                    </main>
+
+                    {/* ITEM DETAIL MODAL */}
+                    {selectedListing && (
+                        <ItemDetailModal 
+                            item={selectedListing} 
+                            onClose={() => setSelectedListing(null)}
+                            onBuyNow={(item) => {
+                                setPaymentContext({ type: 'checkout', item });
+                                setShowPaymentModal(true);
+                            }}
+                            onCalculateFreight={() => {
+                                setSelectedListing(null);
+                                setActiveTab('freight');
+                            }}
+                        />
+                    )}
+
+                    {/* PAYMENT GATEWAY MODAL */}
+                    {showPaymentModal && paymentContext && (
+                        <PaymentGatewayModal 
+                            context={paymentContext} 
+                            currentUser={currentUser}
+                            onClose={() => setShowPaymentModal(false)}
+                            onSuccess={(details) => {
+                                if (paymentContext.type === 'subscription') {
+                                    setCurrentUser({ ...currentUser, tier: paymentContext.plan.name });
+                                    alert(`Payment Successful! Upgraded to ${paymentContext.plan.name} Tier.`);
+                                } else {
+                                    alert(`Escrow Order Processed Successfully! Tracking ID: #${Math.floor(100000 + Math.random() * 900000)}`);
+                                }
+                                setShowPaymentModal(false);
+                            }}
+                        />
+                    )}
+
+                    {/* NEW / EDIT LISTING MODAL */}
+                    {(showNewListingModal || editingListing) && (
+                        <ListingFormModal 
+                            initialData={editingListing}
+                            onClose={() => { setShowNewListingModal(false); setEditingListing(null); }}
+                            onSubmit={(data) => {
+                                if (editingListing) {
+                                    handleUpdateListing({ ...editingListing, ...data });
+                                } else {
+                                    handleAddListing(data);
+                                }
+                            }}
+                        />
+                    )}
+
+                    {/* SUPABASE CLOUD SETUP MODAL */}
+                    {showSupabaseModal && (
+                        <SupabaseConfigModal onClose={() => setShowSupabaseModal(false)} />
                     )}
 
                     {/* FOOTER */}
-                    <footer className="bg-slate-950 text-slate-400 text-xs py-8 px-4 border-t border-slate-900 mt-16">
-                        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
+                    <footer className="bg-slate-900 text-slate-400 border-t border-slate-800 mt-16 py-12">
+                        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
                             <div>
-                                <h4 className="text-white font-black text-sm">AgriUS Market Inc.</h4>
-                                <p className="text-[11px] text-slate-500">Connecting American Farms, Dealers, and Heavy Haul Freight.</p>
+                                <div className="flex items-center text-white font-bold text-xl mb-3">
+                                    <i className="fa-solid fa-wheat-awn text-agri-500 mr-2"></i> AgriUS Market
+                                </div>
+                                <p className="text-xs leading-relaxed text-slate-400">
+                                    North America’s leading verified B2B marketplace for heavy agricultural equipment, fleet sales, and bulk crop inputs.
+                                </p>
                             </div>
-                            <p className="text-[11px]">© 2026 AgriUS Marketplace. All rights reserved. Trade Assurance Escrow Protected.</p>
+                            <div>
+                                <h4 className="text-white font-semibold text-sm mb-3">Quick Navigation</h4>
+                                <ul className="space-y-2 text-xs">
+                                    <li><a href="#" onClick={() => setActiveTab('marketplace')} className="hover:text-white">Browse Tractors</a></li>
+                                    <li><a href="#" onClick={() => setActiveTab('rfq')} className="hover:text-white">RFQ Buying Requests</a></li>
+                                    <li><a href="#" onClick={() => setActiveTab('freight')} className="hover:text-white">Heavy Freight Rates</a></li>
+                                    <li><a href="#" onClick={() => setActiveTab('subscriptions')} className="hover:text-white">Dealer Membership Tiers</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="text-white font-semibold text-sm mb-3">Escrow & Protection</h4>
+                                <p className="text-xs text-slate-400 mb-2">
+                                    All high-value transactions are protected by AgriUS Trade Assurance Escrow. Funds are released only upon delivery inspection.
+                                </p>
+                                <span className="inline-block bg-slate-800 text-agri-400 text-[10px] px-2 py-1 rounded font-mono border border-slate-700">
+                                    <i className="fa-solid fa-lock mr-1"></i> 256-Bit SSL Encrypted
+                                </span>
+                            </div>
+                            <div>
+                                <h4 className="text-white font-semibold text-sm mb-3">Admin Access</h4>
+                                <p className="text-xs text-slate-400 mb-2">Platform Owner or Inspector?</p>
+                                <button 
+                                    onClick={() => { handleUserRoleChange('Admin'); setActiveTab('admin'); }}
+                                    className="w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-2 px-3 rounded border border-slate-700 flex items-center justify-center space-x-2"
+                                >
+                                    <i className="fa-solid fa-key text-amber-400"></i>
+                                    <span>Open Admin Dashboard</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div className="max-w-7xl mx-auto px-4 mt-8 pt-6 border-t border-slate-800 text-center text-xs text-slate-500">
+                            &copy; 2026 AgriUS Marketplace Inc. All rights reserved. Built for U.S. Agriculture & Commercial Dealers.
                         </div>
                     </footer>
                 </div>
             );
         }
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<AgriUSApp />);
+        // ==================== VIEWS ==================== //
+
+        // 1. MARKETPLACE VIEW
+        function MarketplaceView({ listings, categories, selectedCategory, setSelectedCategory, searchQuery, setSearchQuery, onSelectListing, onOpenFreight }) {
+            return (
+                <div>
+                    {/* Hero Header */}
+                    <div className="gradient-banner text-white py-12 px-4">
+                        <div className="max-w-5xl mx-auto text-center">
+                            <span className="inline-block bg-agri-500/20 text-agri-300 font-semibold text-xs px-3 py-1 rounded-full border border-agri-400/30 mb-3">
+                                Verified U.S. Dealer Network
+                            </span>
+                            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
+                                Buy & Sell Heavy Ag Machinery Nationwide
+                            </h1>
+                            <p className="text-slate-200 max-w-2xl mx-auto text-sm md:text-base mb-6">
+                                Transparent listings, verified inspector reports, instant ZIP-to-ZIP heavy freight estimation, and escrow-protected transactions.
+                            </p>
+
+                            {/* Search Box */}
+                            <div className="bg-white p-2 rounded-2xl shadow-xl max-w-3xl mx-auto flex flex-col sm:flex-row gap-2 text-slate-800">
+                                <div className="flex-grow flex items-center px-3 border-r border-slate-200">
+                                    <i className="fa-solid fa-magnifying-glass text-slate-400 mr-2"></i>
+                                    <input 
+                                        type="text" 
+                                        placeholder="Search John Deere, Case IH, Combines, Planters..." 
+                                        className="w-full py-2 text-sm focus:outline-none"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
+                                <div className="flex items-center px-3">
+                                    <i className="fa-solid fa-filter text-slate-400 mr-2"></i>
+                                    <select 
+                                        className="py-2 text-sm bg-transparent focus:outline-none font-medium text-slate-700"
+                                        value={selectedCategory}
+                                        onChange={(e) => setSelectedCategory(e.target.value)}
+                                    >
+                                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Category Tabs */}
+                    <div className="max-w-7xl mx-auto px-4 mt-8">
+                        <div className="flex items-center space-x-2 overflow-x-auto pb-2 custom-scrollbar">
+                            {categories.map(cat => (
+                                <button
+                                    key={cat}
+                                    onClick={() => setSelectedCategory(cat)}
+                                    className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition ${
+                                        selectedCategory === cat 
+                                            ? 'bg-slate-900 text-white shadow-md' 
+                                            : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                                    }`}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Listings Grid */}
+                    <div className="max-w-7xl mx-auto px-4 mt-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-lg font-bold text-slate-800">Available Machinery ({listings.length})</h2>
+                            <button onClick={onOpenFreight} className="text-xs text-agri-700 font-semibold hover:underline flex items-center">
+                                <i className="fa-solid fa-truck-ramp-box mr-1"></i> Calculate Freight Rates
+                            </button>
+                        </div>
+
+                        {listings.length === 0 ? (
+                            <div className="bg-white rounded-2xl p-12 text-center border border-slate-200">
+                                <i className="fa-solid fa-tractor text-4xl text-slate-300 mb-3"></i>
+                                <h3 className="text-base font-bold text-slate-700">No equipment found matching criteria</h3>
+                                <p className="text-xs text-slate-500 mt-1">Try clearing filters or search queries.</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {listings.map(item => (
+                                    <div 
+                                        key={item.id} 
+                                        className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col cursor-pointer group"
+                                        onClick={() => onSelectListing(item)}
+                                    >
+                                        <div className="relative h-48 bg-slate-100 overflow-hidden">
+                                            <img 
+                                                src={item.image} 
+                                                alt={item.title} 
+                                                className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
+                                            />
+                                            <div className="absolute top-3 left-3 bg-slate-900/80 text-white text-[10px] font-bold px-2.5 py-1 rounded-md backdrop-blur">
+                                                {item.category}
+                                            </div>
+                                            {item.verified && (
+                                                <div className="absolute top-3 right-3 bg-agri-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow flex items-center">
+                                                    <i className="fa-solid fa-circle-check mr-1"></i> Verified
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="p-5 flex-grow flex flex-col justify-between">
+                                            <div>
+                                                <div className="text-xs text-slate-500 font-medium mb-1 flex justify-between">
+                                                    <span><i className="fa-solid fa-location-dot text-red-500 mr-1"></i>{item.location}</span>
+                                                    <span>{item.hours ? `${item.hours} hrs` : 'New'}</span>
+                                                </div>
+                                                <h3 className="font-bold text-slate-900 text-base leading-snug group-hover:text-agri-700 transition">
+                                                    {item.title}
+                                                </h3>
+                                                <p className="text-xs text-slate-500 line-clamp-2 mt-2 leading-relaxed">
+                                                    {item.description}
+                                                </p>
+                                            </div>
+
+                                            <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                                                <div>
+                                                    <span className="text-xs text-slate-400 block font-semibold">List Price</span>
+                                                    <span className="text-xl font-extrabold text-slate-900">
+                                                        ${item.price.toLocaleString()}
+                                                    </span>
+                                                </div>
+                                                <button className="bg-slate-100 group-hover:bg-agri-600 group-hover:text-white text-slate-700 text-xs font-bold px-3 py-2 rounded-lg transition">
+                                                    View Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // 2. RFQ BOARD VIEW
+        function RFQBoardView({ rfqs, setRfqs, currentUser }) {
+            const [newRfq, setNewRfq] = useState({ item: '', budget: '', zip: '' });
+            const [showModal, setShowModal] = useState(false);
+
+            const handleCreateRfq = (e) => {
+                e.preventDefault();
+                const rfqObj = {
+                    id: `RFQ-${Math.floor(800 + Math.random() * 100)}`,
+                    item: newRfq.item,
+                    budget: newRfq.budget,
+                    buyer: currentUser.name,
+                    zip: newRfq.zip || currentUser.zip,
+                    status: "Active",
+                    responses: 0
+                };
+                setRfqs([rfqObj, ...rfqs]);
+                setShowModal(false);
+                setNewRfq({ item: '', budget: '', zip: '' });
+            };
+
+            return (
+                <div className="max-w-7xl mx-auto px-4 py-8">
+                    <div className="bg-slate-900 rounded-2xl p-8 text-white mb-8 flex flex-col md:flex-row justify-between items-center">
+                        <div>
+                            <span className="bg-agri-600/30 text-agri-400 text-xs font-bold px-3 py-1 rounded-full border border-agri-500/30">Reverse Sourcing</span>
+                            <h2 className="text-2xl md:text-3xl font-extrabold mt-2">Request For Quotes (RFQ Board)</h2>
+                            <p className="text-slate-400 text-xs md:text-sm mt-1 max-w-xl">
+                                Can't find a specific machine or bulk input? Post your requirements and let verified U.S. dealers submit direct competitive bids.
+                            </p>
+                        </div>
+                        <button 
+                            onClick={() => setShowModal(true)}
+                            className="mt-4 md:mt-0 bg-agri-600 hover:bg-agri-700 text-white text-sm font-bold px-5 py-3 rounded-xl shadow transition"
+                        >
+                            <i className="fa-solid fa-paper-plane mr-2"></i> Post Sourcing Request
+                        </button>
+                    </div>
+
+                    {/* RFQ List */}
+                    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                        <div className="p-4 border-b border-slate-200 bg-slate-50 font-bold text-xs text-slate-500 uppercase tracking-wider flex justify-between">
+                            <span>Active Sourcing Demands</span>
+                            <span>{rfqs.length} Total Requests</span>
+                        </div>
+                        <div className="divide-y divide-slate-100">
+                            {rfqs.map(rfq => (
+                                <div key={rfq.id} className="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:bg-slate-50 transition">
+                                    <div>
+                                        <div className="flex items-center space-x-2 mb-1">
+                                            <span className="bg-slate-100 text-slate-700 text-[11px] font-mono font-bold px-2 py-0.5 rounded">
+                                                {rfq.id}
+                                            </span>
+                                            <span className="text-xs text-slate-500">
+                                                By <strong>{rfq.buyer}</strong> (ZIP {rfq.zip})
+                                            </span>
+                                        </div>
+                                        <h3 className="font-bold text-slate-900 text-base">{rfq.item}</h3>
+                                        <div className="text-xs text-slate-500 mt-1">
+                                            Target Budget: <span className="font-semibold text-agri-700">{rfq.budget}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-end">
+                                        <div className="text-right">
+                                            <span className="text-xs text-slate-500 block">Dealer Quotes</span>
+                                            <span className="text-sm font-bold text-slate-800">{rfq.responses} Bids Received</span>
+                                        </div>
+                                        <button 
+                                            onClick={() => alert(`Submit Bid interface opened for ${rfq.id}`)}
+                                            className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition"
+                                        >
+                                            Submit Bid
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Post RFQ Modal */}
+                    {showModal && (
+                        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+                            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="font-bold text-lg text-slate-900">Post Buyer RFQ</h3>
+                                    <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600">
+                                        <i className="fa-solid fa-xmark text-lg"></i>
+                                    </button>
+                                </div>
+                                <form onSubmit={handleCreateRfq} className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-700 mb-1">Equipment / Seed Needed</label>
+                                        <input 
+                                            type="text" 
+                                            required 
+                                            placeholder="e.g. 2020 John Deere S780 Combine"
+                                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-agri-600"
+                                            value={newRfq.item}
+                                            onChange={e => setNewRfq({...newRfq, item: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-700 mb-1">Target Budget ($)</label>
+                                            <input 
+                                                type="text" 
+                                                required 
+                                                placeholder="$150,000"
+                                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-agri-600"
+                                                value={newRfq.budget}
+                                                onChange={e => setNewRfq({...newRfq, budget: e.target.value})}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-700 mb-1">Delivery ZIP Code</label>
+                                            <input 
+                                                type="text" 
+                                                required 
+                                                placeholder="50301"
+                                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-agri-600"
+                                                value={newRfq.zip}
+                                                onChange={e => setNewRfq({...newRfq, zip: e.target.value})}
+                                            />
+                                        </div>
+                                    </div>
+                                    <button type="submit" className="w-full bg-agri-600 hover:bg-agri-700 text-white font-bold py-3 rounded-lg text-sm transition">
+                                        Submit Request to Network
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // 3. FREIGHT CALCULATOR VIEW
+        function FreightCalculatorView({ listings }) {
+            const [originZip, setOriginZip] = useState('50301');
+            const [destZip, setDestZip] = useState('68502');
+            const [weightLbs, setWeightLbs] = useState(32000);
+            const [calculated, setCalculated] = useState(null);
+
+            const handleCalculate = (e) => {
+                e.preventDefault();
+                const o = parseInt(originZip) || 50000;
+                const d = parseInt(destZip) || 60000;
+                const estMiles = Math.abs(o - d) % 1200 + 150;
+                const ratePerMile = weightLbs > 40000 ? 4.5 : 3.2;
+                const baseFreight = estMiles * ratePerMile;
+                const permitFees = weightLbs > 35000 ? 250 : 0;
+                const total = baseFreight + permitFees;
+
+                setCalculated({
+                    miles: estMiles,
+                    baseFreight,
+                    permitFees,
+                    total: Math.round(total)
+                });
+            };
+
+            return (
+                <div className="max-w-4xl mx-auto px-4 py-8">
+                    <div className="text-center mb-8">
+                        <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">Heavy Haul Logistics</span>
+                        <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 mt-2">ZIP-to-ZIP Heavy Freight Calculator</h2>
+                        <p className="text-xs md:text-sm text-slate-500 mt-1">Get instant nationwide haulage estimates for combines, tractors, and wide loads.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Form */}
+                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                            <h3 className="font-bold text-slate-800 text-sm mb-4">Haulage Parameters</h3>
+                            <form onSubmit={handleCalculate} className="space-y-4">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-700 mb-1">Origin ZIP</label>
+                                        <input 
+                                            type="text" 
+                                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
+                                            value={originZip}
+                                            onChange={e => setOriginZip(e.target.value)}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-700 mb-1">Destination ZIP</label>
+                                        <input 
+                                            type="text" 
+                                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
+                                            value={destZip}
+                                            onChange={e => setDestZip(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">Estimated Equipment Weight (Lbs)</label>
+                                    <input 
+                                        type="number" 
+                                        step="1000"
+                                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
+                                        value={weightLbs}
+                                        onChange={e => setWeightLbs(Number(e.target.value))}
+                                    />
+                                    <span className="text-[10px] text-slate-400 mt-1 block">Standard tractor: ~25,000 lbs | Combine: ~40,000+ lbs</span>
+                                </div>
+
+                                <button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-sm transition flex items-center justify-center space-x-2">
+                                    <i className="fa-solid fa-calculator text-agri-400"></i>
+                                    <span>Calculate Freight Estimate</span>
+                                </button>
+                            </form>
+                        </div>
+
+                        {/* Result */}
+                        <div className="bg-slate-900 text-white p-6 rounded-2xl flex flex-col justify-between shadow-lg">
+                            {calculated ? (
+                                <div>
+                                    <span className="text-agri-400 text-xs font-bold uppercase tracking-wider">Estimate Breakdown</span>
+                                    <div className="text-3xl font-extrabold mt-2 text-white">
+                                        ${calculated.total.toLocaleString()}
+                                    </div>
+                                    <div className="text-xs text-slate-400 mt-1">Est. Transport Distance: {calculated.miles} miles</div>
+
+                                    <div className="mt-6 space-y-3 border-t border-slate-800 pt-4 text-xs">
+                                        <div className="flex justify-between">
+                                            <span className="text-slate-400">Base Flatbed/Stepdeck Haul</span>
+                                            <span className="font-semibold">${calculated.baseFreight.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-slate-400">Oversize Permits & Escort</span>
+                                            <span className="font-semibold">${calculated.permitFees.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-agri-400 font-bold pt-2 border-t border-slate-800">
+                                            <span>AgriUS Transport Guarantee</span>
+                                            <span>Included</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
+                                    <i className="fa-solid fa-truck-trailer text-4xl mb-3 text-slate-700"></i>
+                                    <p className="text-xs">Enter Origin and Destination ZIP codes to calculate real-time heavy transport estimates.</p>
+                                </div>
+                            )}
+
+                            <div className="mt-6 bg-slate-800/80 rounded-xl p-3 text-[11px] text-slate-400 border border-slate-700">
+                                <i className="fa-solid fa-circle-info text-blue-400 mr-1"></i>
+                                Freight quotes are finalized upon booking with verified AgriUS Carrier Partners.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // 4. SUBSCRIPTIONS VIEW
+        function SubscriptionsView({ currentUser, onSelectPlan }) {
+            const PLANS = [
+                {
+                    name: "Verified Farmer",
+                    price: 0,
+                    period: "Free Forever",
+                    features: ["Browse & Buy Equipment", "Trade Assurance Protection", "Post up to 2 Listings/yr", "Basic ZIP Freight Estimates"],
+                    cta: "Current Standard",
+                    highlight: false
+                },
+                {
+                    name: "Commercial Dealer",
+                    price: 199,
+                    period: "per month",
+                    features: ["Unlimited Machinery Listings", "Verified Dealer Badge", "Direct RFQ Bidding Board", "Priority Support & Escrow", "Analytics Dashboard"],
+                    cta: "Upgrade to Commercial",
+                    highlight: true
+                },
+                {
+                    name: "Enterprise Manufacturer",
+                    price: 499,
+                    period: "per month",
+                    features: ["Everything in Commercial", "Dedicated Account Manager", "API Inventory Sync", "Featured Search Placement", "Zero Escrow Fee Tier"],
+                    cta: "Subscribe Enterprise",
+                    highlight: false
+                }
+            ];
+
+            return (
+                <div className="max-w-7xl mx-auto px-4 py-12">
+                    <div className="text-center max-w-3xl mx-auto mb-12">
+                        <span className="bg-agri-100 text-agri-800 text-xs font-bold px-3 py-1 rounded-full">Membership Tiers</span>
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mt-3">Dealer & Seller Subscription Plans</h2>
+                        <p className="text-slate-600 text-sm mt-2">Scale your agricultural equipment fleet sales nationwide with verified buyer protection.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {PLANS.map((plan, idx) => (
+                            <div 
+                                key={idx}
+                                className={`bg-white rounded-3xl p-8 border flex flex-col justify-between relative transition ${
+                                    plan.highlight 
+                                        ? 'border-2 border-agri-600 shadow-xl ring-4 ring-agri-600/10' 
+                                        : 'border-slate-200 shadow-sm hover:shadow-md'
+                                }`}
+                            >
+                                {plan.highlight && (
+                                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-agri-600 text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+                                        Most Popular For Dealers
+                                    </span>
+                                )}
+
+                                <div>
+                                    <h3 className="font-extrabold text-slate-900 text-xl">{plan.name}</h3>
+                                    <div className="mt-4 flex items-baseline text-slate-900">
+                                        <span className="text-4xl font-black tracking-tight">${plan.price}</span>
+                                        <span className="ml-1 text-slate-500 text-xs font-semibold">{plan.period}</span>
+                                    </div>
+
+                                    <ul className="mt-6 space-y-3 text-xs text-slate-600">
+                                        {plan.features.map((feat, fidx) => (
+                                            <li key={fidx} className="flex items-center">
+                                                <i className="fa-solid fa-check text-agri-600 mr-2 text-sm"></i>
+                                                <span>{feat}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                <div className="mt-8">
+                                    <button
+                                        disabled={currentUser.tier === plan.name}
+                                        onClick={() => onSelectPlan(plan)}
+                                        className={`w-full py-3 rounded-xl font-bold text-sm transition ${
+                                            currentUser.tier === plan.name
+                                                ? 'bg-slate-100 text-slate-400 cursor-default'
+                                                : plan.highlight 
+                                                    ? 'bg-agri-600 hover:bg-agri-700 text-white shadow-md' 
+                                                    : 'bg-slate-900 hover:bg-slate-800 text-white'
+                                        }`}
+                                    >
+                                        {currentUser.tier === plan.name ? 'Active Plan' : plan.cta}
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        // 5. USER DASHBOARD VIEW
+        function UserDashboardView({ currentUser, listings, onUpgrade, onNewListing }) {
+            return (
+                <div className="max-w-7xl mx-auto px-4 py-8">
+                    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div className="flex items-center space-x-4">
+                            <div className="w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-bold text-xl shadow">
+                                {currentUser.name.split(' ').map(n=>n[0]).join('')}
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-900">{currentUser.name}</h2>
+                                <div className="flex items-center space-x-2 text-xs text-slate-500 mt-0.5">
+                                    <span>{currentUser.email}</span>
+                                    <span>•</span>
+                                    <span className="text-agri-700 font-semibold">{currentUser.tier} Tier</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center space-x-3">
+                            <button onClick={onUpgrade} className="bg-agri-50 hover:bg-agri-100 text-agri-800 text-xs font-bold px-4 py-2.5 rounded-lg border border-agri-200 transition">
+                                <i className="fa-solid fa-crown text-amber-500 mr-1.5"></i> Manage Membership
+                            </button>
+                            <button onClick={onNewListing} className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow transition">
+                                <i className="fa-solid fa-plus mr-1.5"></i> New Listing
+                            </button>
+                        </div>
+                    </div>
+
+                    <h3 className="font-bold text-slate-800 text-base mb-4">My Machinery Listings ({listings.length})</h3>
+
+                    {listings.length === 0 ? (
+                        <div className="bg-white rounded-2xl p-12 text-center border border-slate-200">
+                            <i className="fa-solid fa-box-open text-4xl text-slate-300 mb-3"></i>
+                            <h4 className="text-sm font-bold text-slate-700">No active equipment posted</h4>
+                            <p className="text-xs text-slate-500 mt-1 mb-4">You have not created any sales listings yet.</p>
+                            <button onClick={onNewListing} className="bg-agri-600 text-white text-xs font-bold px-4 py-2 rounded-lg">
+                                Create First Listing
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {listings.map(item => (
+                                <div key={item.id} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm relative">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                                            item.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
+                                        }`}>
+                                            {item.status}
+                                        </span>
+                                        <span className="font-mono text-xs text-slate-400">{item.id}</span>
+                                    </div>
+                                    <h4 className="font-bold text-slate-900 text-sm line-clamp-1">{item.title}</h4>
+                                    <div className="text-base font-extrabold text-agri-700 mt-1">${item.price.toLocaleString()}</div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // 6. ADMIN PANEL VIEW (FULL CRUD & APPROVALS)
+        function AdminPanelView({ listings, rfqs, onApproveReject, onDelete, onEdit, onOpenSupabase }) {
+            const [filter, setFilter] = useState('all'); // all, pending, approved
+
+            const filteredListings = listings.filter(item => {
+                if (filter === 'pending') return item.status === 'pending';
+                if (filter === 'approved') return item.status === 'approved';
+                return true;
+            });
+
+            return (
+                <div className="max-w-7xl mx-auto px-4 py-8">
+                    {/* Admin Header */}
+                    <div className="bg-slate-900 rounded-2xl p-6 text-white mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-l-4 border-amberGold">
+                        <div>
+                            <div className="flex items-center space-x-2">
+                                <span className="bg-amber-500/20 text-amber-400 text-xs font-mono font-bold px-2.5 py-0.5 rounded border border-amber-500/30">
+                                    ADMIN SUPERUSER MODE
+                                </span>
+                                <span className="text-slate-400 text-xs">Full CRUD & Platform Control</span>
+                            </div>
+                            <h2 className="text-2xl font-black mt-1">Platform Operations Control Center</h2>
+                        </div>
+
+                        <div className="flex items-center space-x-3">
+                            <button 
+                                onClick={onOpenSupabase}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition flex items-center space-x-2"
+                            >
+                                <i className="fa-solid fa-database"></i>
+                                <span>Supabase Database Config</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Stats Overview */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <span className="text-xs text-slate-500 font-medium">Total Machinery Listings</span>
+                            <div className="text-2xl font-black text-slate-900 mt-1">{listings.length}</div>
+                        </div>
+                        <div className="bg-white p-5 rounded-2xl border border-amber-200 bg-amber-50/50 shadow-sm">
+                            <span className="text-xs text-amber-800 font-medium">Pending Moderation</span>
+                            <div className="text-2xl font-black text-amber-900 mt-1">
+                                {listings.filter(l => l.status === 'pending').length}
+                            </div>
+                        </div>
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <span className="text-xs text-slate-500 font-medium">Active RFQs</span>
+                            <div className="text-2xl font-black text-slate-900 mt-1">{rfqs.length}</div>
+                        </div>
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <span className="text-xs text-slate-500 font-medium">Cloud Sync Status</span>
+                            <div className="text-xs font-bold text-agri-600 mt-2 flex items-center">
+                                <span className="w-2 h-2 bg-agri-500 rounded-full mr-2 animate-pulse"></span> Local Storage Active
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Listings Management Table */}
+                    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                        <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center flex-wrap gap-2">
+                            <h3 className="font-bold text-slate-800 text-sm">Machinery Catalog Management</h3>
+                            
+                            <div className="flex bg-slate-200 p-1 rounded-lg text-xs font-semibold">
+                                {['all', 'pending', 'approved'].map(f => (
+                                    <button 
+                                        key={f}
+                                        onClick={() => setFilter(f)}
+                                        className={`px-3 py-1 rounded-md capitalize ${filter === f ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'}`}
+                                    >
+                                        {f}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr className="border-b border-slate-200 bg-slate-100 text-slate-500 uppercase font-semibold">
+                                        <th className="p-3">Item</th>
+                                        <th className="p-3">Category</th>
+                                        <th className="p-3">Price</th>
+                                        <th className="p-3">Seller</th>
+                                        <th className="p-3">Status</th>
+                                        <th className="p-3 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {filteredListings.map(item => (
+                                        <tr key={item.id} className="hover:bg-slate-50">
+                                            <td className="p-3 font-medium text-slate-900 flex items-center space-x-3">
+                                                <img src={item.image} className="w-10 h-10 object-cover rounded-lg" />
+                                                <div>
+                                                    <div className="font-bold">{item.title}</div>
+                                                    <div className="text-[10px] text-slate-400 font-mono">{item.id}</div>
+                                                </div>
+                                            </td>
+                                            <td className="p-3 text-slate-600">{item.category}</td>
+                                            <td className="p-3 font-bold text-slate-900">${item.price.toLocaleString()}</td>
+                                            <td className="p-3 text-slate-600">{item.seller}</td>
+                                            <td className="p-3">
+                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                                    item.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
+                                                }`}>
+                                                    {item.status}
+                                                </span>
+                                            </td>
+                                            <td className="p-3 text-right space-x-2">
+                                                {item.status === 'pending' && (
+                                                    <button 
+                                                        onClick={() => onApproveReject(item.id, 'approved')}
+                                                        className="bg-agri-600 hover:bg-agri-700 text-white px-2.5 py-1 rounded font-bold"
+                                                    >
+                                                        Approve
+                                                    </button>
+                                                )}
+                                                <button 
+                                                    onClick={() => onEdit(item)}
+                                                    className="bg-slate-200 hover:bg-slate-300 text-slate-800 px-2.5 py-1 rounded font-bold"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button 
+                                                    onClick={() => onDelete(item.id)}
+                                                    className="bg-red-100 hover:bg-red-200 text-red-700 px-2.5 py-1 rounded font-bold"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // ==================== MODALS ==================== //
+
+        // 1. PAYMENT GATEWAY INTEGRATION MODAL
+        function PaymentGatewayModal({ context, currentUser, onClose, onSuccess }) {
+            const [method, setMethod] = useState('card'); // card, escrow, ach
+            const [loading, setLoading] = useState(false);
+            const [cardDetails, setCardDetails] = useState({ number: '4242 •••• •••• 4242', exp: '12/28', cvv: '888' });
+
+            const amount = context.type === 'subscription' ? context.plan.price : context.item.price;
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setTimeout(() => {
+                    setLoading(false);
+                    onSuccess();
+                }, 1800);
+            };
+
+            return (
+                <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200">
+                        <div className="bg-slate-900 text-white p-6 flex justify-between items-center">
+                            <div>
+                                <span className="text-agri-400 text-xs font-bold uppercase tracking-wider">AgriUS Payment Gateway</span>
+                                <h3 className="text-lg font-extrabold mt-0.5">
+                                    {context.type === 'subscription' ? `Subscribe: ${context.plan.name}` : `Escrow Checkout: ${context.item.title}`}
+                                </h3>
+                            </div>
+                            <button onClick={onClose} className="text-slate-400 hover:text-white">
+                                <i className="fa-solid fa-xmark text-xl"></i>
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex justify-between items-center mb-6">
+                                <span className="text-xs text-slate-500 font-semibold">Total Amount Due</span>
+                                <span className="text-2xl font-black text-slate-900">${amount.toLocaleString()}</span>
+                            </div>
+
+                            {/* Payment Options */}
+                            <div className="grid grid-cols-3 gap-2 mb-6">
+                                {[
+                                    { id: 'card', label: 'Credit Card', icon: 'fa-credit-card' },
+                                    { id: 'escrow', label: 'Agri Escrow', icon: 'fa-shield-halved' },
+                                    { id: 'ach', label: 'ACH Wire', icon: 'fa-building-columns' }
+                                ].map(m => (
+                                    <button
+                                        key={m.id}
+                                        type="button"
+                                        onClick={() => setMethod(m.id)}
+                                        className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center space-y-1 transition ${
+                                            method === m.id ? 'border-agri-600 bg-agri-50 text-agri-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                                        }`}
+                                    >
+                                        <i className={`fa-solid ${m.icon} text-base`}></i>
+                                        <span>{m.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                {method === 'card' && (
+                                    <>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-700 mb-1">Card Number</label>
+                                            <input 
+                                                type="text" 
+                                                required 
+                                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono"
+                                                value={cardDetails.number}
+                                                onChange={e => setCardDetails({...cardDetails, number: e.target.value})}
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="block text-xs font-semibold text-slate-700 mb-1">Expires</label>
+                                                <input 
+                                                    type="text" 
+                                                    required 
+                                                    className="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono"
+                                                    value={cardDetails.exp}
+                                                    onChange={e => setCardDetails({...cardDetails, exp: e.target.value})}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-semibold text-slate-700 mb-1">CVC / CVV</label>
+                                                <input 
+                                                    type="text" 
+                                                    required 
+                                                    className="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono"
+                                                    value={cardDetails.cvv}
+                                                    onChange={e => setCardDetails({...cardDetails, cvv: e.target.value})}
+                                                />
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+
+                                {method === 'escrow' && (
+                                    <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 text-xs text-amber-900 leading-relaxed">
+                                        <i className="fa-solid fa-lock text-amber-600 mr-1.5"></i>
+                                        <strong>AgriUS Trade Escrow:</strong> Your funds are held securely in a U.S. FDIC-insured trust account and will only be released to the seller after equipment delivery inspection.
+                                    </div>
+                                )}
+
+                                {method === 'ach' && (
+                                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 text-xs text-blue-900 leading-relaxed font-mono">
+                                        Bank: First National Ag Bank<br/>
+                                        Routing: 121000358<br/>
+                                        Account: 8839019284<br/>
+                                        Reference: {context.type.toUpperCase()}-{Math.floor(1000+Math.random()*9000)}
+                                    </div>
+                                )}
+
+                                <button 
+                                    type="submit" 
+                                    disabled={loading}
+                                    className="w-full bg-agri-600 hover:bg-agri-700 text-white font-extrabold py-3.5 rounded-xl text-sm transition shadow-lg flex items-center justify-center space-x-2"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <i className="fa-solid fa-circle-notch fa-spin"></i>
+                                            <span>Processing Secured Payment...</span>
+                                        </>
+                                    ) : (
+                                        <span>Confirm & Pay ${amount.toLocaleString()}</span>
+                                    )}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // 2. ITEM DETAIL MODAL
+        function ItemDetailModal({ item, onClose, onBuyNow, onCalculateFreight }) {
+            return (
+                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-slate-200 my-8">
+                        <div className="relative h-64 bg-slate-100">
+                            <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                            <button onClick={onClose} className="absolute top-4 right-4 bg-slate-900/70 text-white w-9 h-9 rounded-full flex items-center justify-center">
+                                <i className="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <span className="text-xs font-bold text-agri-700 uppercase tracking-wider">{item.category}</span>
+                                    <h2 className="text-2xl font-black text-slate-900 mt-1">{item.title}</h2>
+                                    <span className="text-xs text-slate-500"><i className="fa-solid fa-location-dot text-red-500 mr-1"></i>{item.location}</span>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-xs text-slate-400 block font-semibold">List Price</span>
+                                    <span className="text-2xl font-extrabold text-slate-900">${item.price.toLocaleString()}</span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-3 my-6 bg-slate-50 p-4 rounded-xl border border-slate-200 text-center text-xs">
+                                <div>
+                                    <span className="text-slate-400 block">Hours</span>
+                                    <span className="font-bold text-slate-800">{item.hours ? `${item.hours} hrs` : 'N/A'}</span>
+                                </div>
+                                <div>
+                                    <span className="text-slate-400 block">Horsepower</span>
+                                    <span className="font-bold text-slate-800">{item.hp ? `${item.hp} HP` : 'N/A'}</span>
+                                </div>
+                                <div>
+                                    <span className="text-slate-400 block">Condition</span>
+                                    <span className="font-bold text-slate-800">{item.condition}</span>
+                                </div>
+                            </div>
+
+                            <p className="text-xs text-slate-600 leading-relaxed mb-6">{item.description}</p>
+
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <button 
+                                    onClick={() => onBuyNow(item)}
+                                    className="flex-grow bg-agri-600 hover:bg-agri-700 text-white font-bold py-3 rounded-xl text-sm transition shadow"
+                                >
+                                    <i className="fa-solid fa-shield-halved mr-2"></i> Buy via Escrow Protection
+                                </button>
+                                <button 
+                                    onClick={onCalculateFreight}
+                                    className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-4 py-3 rounded-xl text-sm transition"
+                                >
+                                    Freight Rates
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // 3. CREATE / EDIT LISTING MODAL
+        function ListingFormModal({ initialData, onClose, onSubmit }) {
+            const [formData, setFormData] = useState(initialData || {
+                title: '',
+                category: 'Tractors',
+                price: '',
+                location: 'Des Moines, IA',
+                zip: '50301',
+                hours: '',
+                hp: '',
+                condition: 'Excellent',
+                description: '',
+                image: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=800&q=80'
+            });
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                onSubmit({
+                    ...formData,
+                    price: Number(formData.price),
+                    hours: Number(formData.hours),
+                    hp: Number(formData.hp)
+                });
+            };
+
+            return (
+                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-bold text-lg text-slate-900">
+                                {initialData ? 'Edit Equipment Listing' : 'Post Equipment for Sale'}
+                            </h3>
+                            <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+                                <i className="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+                            <div>
+                                <label className="block font-semibold text-slate-700 mb-1">Equipment Title</label>
+                                <input 
+                                    type="text" 
+                                    required 
+                                    placeholder="2021 John Deere 8R 410"
+                                    className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
+                                    value={formData.title}
+                                    onChange={e => setFormData({...formData, title: e.target.value})}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block font-semibold text-slate-700 mb-1">Category</label>
+                                    <select 
+                                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
+                                        value={formData.category}
+                                        onChange={e => setFormData({...formData, category: e.target.value})}
+                                    >
+                                        {['Tractors', 'Combines & Harvesting', 'Tillage & Planting', 'Sprayers & Applicators', 'Grain Handling'].map(c => (
+                                            <option key={c} value={c}>{c}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block font-semibold text-slate-700 mb-1">Price ($USD)</label>
+                                    <input 
+                                        type="number" 
+                                        required 
+                                        placeholder="150000"
+                                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
+                                        value={formData.price}
+                                        onChange={e => setFormData({...formData, price: e.target.value})}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block font-semibold text-slate-700 mb-1">Location City, State</label>
+                                    <input 
+                                        type="text" 
+                                        required 
+                                        placeholder="Fargo, ND"
+                                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
+                                        value={formData.location}
+                                        onChange={e => setFormData({...formData, location: e.target.value})}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block font-semibold text-slate-700 mb-1">ZIP Code</label>
+                                    <input 
+                                        type="text" 
+                                        required 
+                                        placeholder="58102"
+                                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
+                                        value={formData.zip}
+                                        onChange={e => setFormData({...formData, zip: e.target.value})}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block font-semibold text-slate-700 mb-1">Description</label>
+                                <textarea 
+                                    rows="3" 
+                                    className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
+                                    value={formData.description}
+                                    onChange={e => setFormData({...formData, description: e.target.value})}
+                                ></textarea>
+                            </div>
+
+                            <button type="submit" className="w-full bg-agri-600 hover:bg-agri-700 text-white font-bold py-3 rounded-xl text-sm transition">
+                                Save & Submit Listing
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+
+        // 4. SUPABASE CONFIG MODAL
+        function SupabaseConfigModal({ onClose }) {
+            const [url, setUrl] = useState('');
+            const [key, setKey] = useState('');
+
+            return (
+                <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+                        <div className="flex justify-between items-center mb-4">
+                            <div className="flex items-center space-x-2">
+                                <i className="fa-solid fa-database text-emerald-600 text-lg"></i>
+                                <h3 className="font-bold text-slate-900 text-base">Supabase Cloud Database Config</h3>
+                            </div>
+                            <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+                                <i className="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+
+                        <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+                            Connect your real Supabase cloud PostgreSQL instance to sync equipment, dealers, and escrow orders online across users.
+                        </p>
+
+                        <div className="space-y-3 text-xs mb-6">
+                            <div>
+                                <label className="block font-semibold text-slate-700 mb-1">Supabase Project URL</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="https://xyzcompany.supabase.co" 
+                                    className="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-xs"
+                                    value={url}
+                                    onChange={e => setUrl(e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <label className="block font-semibold text-slate-700 mb-1">Anon Public API Key</label>
+                                <input 
+                                    type="password" 
+                                    placeholder="eyJhbGciOiJIUzI1NiIsInR..." 
+                                    className="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-xs"
+                                    value={key}
+                                    onChange={e => setKey(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <button 
+                            onClick={() => { alert("Supabase configuration saved! (In live mode, cloud tables will connect)"); onClose(); }}
+                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs transition"
+                        >
+                            Save Cloud Connection Keys
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // Render Application
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
