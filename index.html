@@ -1,1623 +1,612 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriUS Marketplace | Heavy Farm Machinery & Agricultural Equipment</title>
-    
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        agri: {
-                            50: '#f0fdf4',
-                            100: '#dcfce7',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                            700: '#15803d',
-                            800: '#166534',
-                            900: '#14532d',
-                        },
-                        amberGold: '#d97706',
-                    }
-                }
-            }
-        }
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgriUS Marketplace | U.S. Premier Ag Machinery, Logistics & Certified Inspections</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Compiler for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Google Model Viewer for 3D & Augmented Reality (AR) -->
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
 
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <!-- React 18 & Babel CDN -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .glass-nav {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(8px);
-        }
-        .gradient-banner {
-            background: linear-gradient(135deg, #14532d 0%, #15803d 50%, #1e3a8a 100%);
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-    </style>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    model-viewer { width: 100%; height: 320px; background-color: #0f172a; border-radius: 0.75rem; }
+  </style>
 </head>
-<body class="h-full text-slate-800">
-    <div id="root"></div>
+<body>
 
-    <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+  <div id="root"></div>
 
-        // --- MOCK INITIAL DATA ---
-        const INITIAL_LISTINGS = [
-            {
-                id: "AG-101",
-                title: "2022 John Deere 8R 410 Tractor",
-                category: "Tractors",
-                price: 345000,
-                location: "Des Moines, IA (ZIP 50301)",
-                zip: "50301",
-                hours: 840,
-                hp: 410,
-                condition: "Like New",
-                seller: "Midwest Agri Fleet Inc.",
-                verified: true,
-                status: "approved",
-                tier: "Enterprise",
-                image: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=800&q=80",
-                description: "Clean, single-owner 8R 410 with Signature Edition package, CommandPro transmission, and Duals. Full warranty remaining until late 2026."
-            },
-            {
-                id: "AG-102",
-                title: "2021 Case IH Axial-Flow 8250 Combine",
-                category: "Combines & Harvesting",
-                price: 389000,
-                location: "Fargo, ND (ZIP 58102)",
-                zip: "58102",
-                hours: 620,
-                hp: 480,
-                condition: "Excellent",
-                seller: "Red River Dealers Co.",
-                verified: true,
-                status: "approved",
-                tier: "Commercial",
-                image: "https://images.unsplash.com/photo-1595246140625-573b715d11dc?auto=format&fit=crop&w=800&q=80",
-                description: "Includes 40ft Draper Head, Luxury Cab, Automation package, and extended auger. Ready for wheat & corn."
-            },
-            {
-                id: "AG-103",
-                title: "2023 Kinze 4905 24-Row Planter",
-                category: "Tillage & Planting",
-                price: 215000,
-                location: "Lincoln, NE (ZIP 68502)",
-                zip: "68502",
-                hours: 120,
-                hp: 0,
-                condition: "Mint",
-                seller: "Cornhusker Ag Sales",
-                verified: true,
-                status: "approved",
-                tier: "Commercial",
-                image: "https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&w=800&q=80",
-                description: "Electric drive, liquid fertilizer system, hydraulic weight transfer. Used for only one planting season."
-            },
-            {
-                id: "AG-104",
-                title: "2020 Apache AS1250 Self-Propelled Sprayer",
-                category: "Sprayers & Applicators",
-                price: 185000,
-                location: "Sioux Falls, SD (ZIP 57101)",
-                zip: "57101",
-                hours: 1100,
-                hp: 300,
-                condition: "Good",
-                seller: "Dakota Custom Ag",
-                verified: false,
-                status: "approved",
-                tier: "Verified Farmer",
-                image: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&q=80",
-                description: "1200-gallon stainless tank, 120ft aluminum boom, Raven Hawkeye PWM system."
-            },
-            {
-                id: "AG-105",
-                title: "2023 Brent 1198 Grain Cart",
-                category: "Grain Handling",
-                price: 92000,
-                location: "Peoria, IL (ZIP 61602)",
-                zip: "61602",
-                hours: 50,
-                hp: 0,
-                condition: "Brand New",
-                seller: "Heartland Heavy Equipment",
-                verified: true,
-                status: "approved",
-                tier: "Enterprise",
-                image: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&w=800&q=80",
-                description: "1100 bushel capacity, track system, auto-tarp, Digi-Star scale system."
-            },
-            {
-                id: "AG-106",
-                title: "2024 Kubota M8-201 Utility Tractor",
-                category: "Tractors",
-                price: 168000,
-                location: "Amarillo, TX (ZIP 79101)",
-                zip: "79101",
-                hours: 15,
-                hp: 200,
-                condition: "Brand New",
-                seller: "Panhandle Power Ag",
-                verified: false,
-                status: "pending",
-                tier: "Commercial",
-                image: "https://images.unsplash.com/photo-1530267981375-f0de937f5f13?auto=format&fit=crop&w=800&q=80",
-                description: "Dealer demo unit with full factory warranty. Semi-powershift, front suspension."
-            }
-        ];
+  <script type="text/babel">
+    const { useState, useEffect } = React;
 
-        const INITIAL_RFQS = [
-            { id: "RFQ-801", item: "Looking for 12-Row Corn Head (30-inch)", budget: "$45,000 - $60,000", buyer: "Valley Farms LLC", zip: "68102", status: "Active", responses: 4 },
-            { id: "RFQ-802", item: "Bulk Purchase: Certified Non-GMO Soybean Seed (500 Bags)", budget: "$30,000", buyer: "AgriCoop North", zip: "50010", status: "Active", responses: 2 },
-            { id: "RFQ-803", item: "Late Model 500HP Quadtrac Tractor Rental (3 Months)", budget: "$25,000", buyer: "Great Plains Grain", zip: "67202", status: "Closed", responses: 8 }
-        ];
+    const AMAZON_AFFILIATE_TAG = "agrius0f-20";
+    const SUPABASE_URL = "https://YOUR_SUPABASE_PROJECT_ID.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+    let supabase = null;
 
-        function App() {
-            // --- STATE MANAGEMENT ---
-            const [listings, setListings] = useState(() => {
-                const saved = localStorage.getItem('agrius_listings');
-                return saved ? JSON.parse(saved) : INITIAL_LISTINGS;
-            });
+    try {
+      if (SUPABASE_URL && !SUPABASE_URL.includes("YOUR_SUPABASE")) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch (e) {
+      console.warn("Supabase initialization deferred.", e);
+    }
 
-            const [rfqs, setRfqs] = useState(() => {
-                const saved = localStorage.getItem('agrius_rfqs');
-                return saved ? JSON.parse(saved) : INITIAL_RFQS;
-            });
+    // Heavy Equipment Inventory
+    const initialEquipment = [
+      {
+        id: 1,
+        title: "John Deere 8R 410 Tractor (2024)",
+        category: "Heavy Machinery",
+        price: 385000,
+        location: "Moline, IL",
+        weight: "31,000 lbs",
+        seller: "Midwest Agri Fleet",
+        vin: "AGRI-8R410-2024-9982",
+        healthScore: "98% Excellent",
+        approved: true,
+        image: "https://images.unsplash.com/photo-1592861956120-e524fc739696?auto=format&fit=crop&w=800&q=80",
+        youtubeUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+        model3dUrl: "https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+      },
+      {
+        id: 2,
+        title: "DJI Agras T40 Spraying Drone System",
+        category: "Ag Tech & Drones",
+        price: 24500,
+        location: "Fresno, CA",
+        weight: "85 lbs",
+        seller: "Pacific Ag Tech",
+        vin: "DRONE-T40-2025-0041",
+        healthScore: "100% Like New",
+        approved: true,
+        image: "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80",
+        youtubeUrl: "",
+        model3dUrl: ""
+      }
+    ];
 
-            const [currentUser, setCurrentUser] = useState(() => {
-                const saved = localStorage.getItem('agrius_user');
-                return saved ? JSON.parse(saved) : {
-                    name: "John Miller",
-                    email: "john@millerfarms.com",
-                    role: "Customer", // Options: "Customer", "Dealer", "Admin"
-                    tier: "Verified Farmer",
-                    verified: true,
-                    zip: "50301"
-                };
-            });
+    // Amazon Affiliated Hand Tools
+    const amazonTools = [
+      {
+        id: "amz-1",
+        title: "Milwaukee M18 Fuel 1/2 High Torque Impact Wrench Kit",
+        category: "Heavy Mechanics Tools",
+        price: "299.00",
+        rating: "4.9 ★ (12,400+ reviews)",
+        image: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=500&q=80",
+        amazonUrl: `https://www.amazon.com/dp/B073CR23GF?tag=${AMAZON_AFFILIATE_TAG}`
+      },
+      {
+        id: "amz-2",
+        title: "Fiskars Pro 36 Inch Heavy Duty Forging Axe & Cutter",
+        category: "Manual Field Tools",
+        price: "64.99",
+        rating: "4.8 ★ (8,900+ reviews)",
+        image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=500&q=80",
+        amazonUrl: `https://www.amazon.com/dp/B00004SD1Y?tag=${AMAZON_AFFILIATE_TAG}`
+      }
+    ];
 
-            const [activeTab, setActiveTab] = useState('marketplace'); // marketplace, rfq, freight, subscriptions, dashboard, admin
-            const [selectedCategory, setSelectedCategory] = useState('All');
-            const [searchQuery, setSearchQuery] = useState('');
-            const [selectedListing, setSelectedListing] = useState(null);
-            
-            // Modal States
-            const [showPaymentModal, setShowPaymentModal] = useState(false);
-            const [paymentContext, setPaymentContext] = useState(null); // { type: 'subscription' | 'checkout', plan?: any, item?: any }
-            const [showSupabaseModal, setShowSupabaseModal] = useState(false);
-            const [showNewListingModal, setShowNewListingModal] = useState(false);
-            const [editingListing, setEditingListing] = useState(null);
+    // Carriers / Logistics Network Data
+    const initialCarriers = [
+      {
+        id: "car-1",
+        name: "TransAmerica Lowboy Heavy Haul LLC",
+        fleet: "45 Lowboy Trailers (Up to 80,000 lbs)",
+        coverage: "Nationwide (All 50 U.S. States)",
+        insurance: "$5,000,000 Cargo Insured",
+        rating: "4.9 ★ (310+ Transports)",
+        contact: "dispatch@transamericalowboy.com"
+      }
+    ];
 
-            // Save to localStorage
-            useEffect(() => {
-                localStorage.setItem('agrius_listings', JSON.stringify(listings));
-            }, [listings]);
+    // Certified Inspectors Network Data
+    const initialInspectors = [
+      {
+        id: "insp-1",
+        name: "Robert 'Bob' Vance, ASE Master Tech",
+        company: "AgriUS Certified Field Inspection Unit #104",
+        specialty: "Hydraulic Systems, Diesel Powertrains & Frame Integrity",
+        rate: "$350 Flat Audit Fee",
+        location: "Midwest Region (IL, IA, IN)",
+        rating: "5.0 ★ (140+ Audits Completed)",
+        phone: "(312) 555-0199",
+        image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80"
+      }
+    ];
 
-            useEffect(() => {
-                localStorage.setItem('agrius_rfqs', JSON.stringify(rfqs));
-            }, [rfqs]);
+    // Mechanics Directory
+    const initialMechanics = [
+      {
+        id: "mech-1",
+        name: "Dave 'Diesel' Henderson",
+        company: "Midwest Mobile Heavy Repair LLC",
+        specialty: "John Deere & Case IH Hydraulics & Engines",
+        rate: "$95 / Hour",
+        location: "Des Moines, IA (Radius: 150 miles)",
+        rating: "4.9 ★ (84 Verified)",
+        phone: "(515) 555-0192",
+        image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=400&q=80"
+      }
+    ];
 
-            useEffect(() => {
-                localStorage.setItem('agrius_user', JSON.stringify(currentUser));
-            }, [currentUser]);
+    // Sponsored Rotating Ads Ticker Data
+    const initialSponsoredAds = [
+      { id: 'ad-1', title: '🌟 SPONSORED DEALER: Midwest Fleet Special Discount - Save $500 on Freight Today!', type: 'Dealer', link: '#' },
+      { id: 'ad-2', title: '🚚 FEATURED CARRIER: TransAmerica Lowboy offers 10% off cross-state heavy haul!', type: 'Logistics', link: '#' },
+      { id: 'ad-3', title: '🔍 CERTIFIED INSPECTION: Book an on-site 50-point audit within 24 hours!', type: 'Inspection', link: '#' }
+    ];
 
-            // Filtered listings for public marketplace
-            const publicListings = useMemo(() => {
-                return listings.filter(item => {
-                    const matchesStatus = item.status === 'approved' || currentUser.role === 'Admin';
-                    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
-                    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                          item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                          item.seller.toLowerCase().includes(searchQuery.toLowerCase());
-                    return matchesStatus && matchesCategory && matchesSearch;
-                });
-            }, [listings, selectedCategory, searchQuery, currentUser]);
+    function App() {
+      const [view, setView] = useState('marketplace'); // marketplace, amazonTools, logistics, inspectors, mechanics, freight, admin
+      
+      const [equipmentList, setEquipmentList] = useState(() => {
+        const saved = localStorage.getItem('agrius_equipment');
+        return saved ? JSON.parse(saved) : initialEquipment;
+      });
 
-            // CRUD Handlers
-            const handleAddListing = (newListing) => {
-                const listingToAdd = {
-                    ...newListing,
-                    id: `AG-${Math.floor(100 + Math.random() * 900)}`,
-                    status: currentUser.role === 'Admin' ? 'approved' : 'pending',
-                    seller: currentUser.name,
-                    verified: currentUser.verified,
-                    tier: currentUser.tier
-                };
-                setListings([listingToAdd, ...listings]);
-                setShowNewListingModal(false);
-                alert(currentUser.role === 'Admin' 
-                    ? "Listing published directly!" 
-                    : "Listing submitted! Pending Admin Approval.");
-            };
+      const [carriersList, setCarriersList] = useState(() => {
+        const saved = localStorage.getItem('agrius_carriers');
+        return saved ? JSON.parse(saved) : initialCarriers;
+      });
 
-            const handleUpdateListing = (updated) => {
-                setListings(listings.map(l => l.id === updated.id ? updated : l));
-                setEditingListing(null);
-            };
+      const [inspectorsList, setInspectorsList] = useState(() => {
+        const saved = localStorage.getItem('agrius_inspectors');
+        return saved ? JSON.parse(saved) : initialInspectors;
+      });
 
-            const handleDeleteListing = (id) => {
-                if(confirm("Are you sure you want to delete this listing permanently?")) {
-                    setListings(listings.filter(l => l.id !== id));
-                    if (selectedListing?.id === id) setSelectedListing(null);
-                }
-            };
+      const [mechanicsList, setMechanicsList] = useState(() => {
+        const saved = localStorage.getItem('agrius_mechanics');
+        return saved ? JSON.parse(saved) : initialMechanics;
+      });
 
-            const handleApproveReject = (id, status) => {
-                setListings(listings.map(l => l.id === id ? { ...l, status } : l));
-            };
+      const [sponsoredAds, setSponsoredAds] = useState(initialSponsoredAds);
+      const [currentAdIndex, setCurrentAdIndex] = useState(0);
 
-            // Switch User Role Simulation
-            const handleUserRoleChange = (role) => {
-                const updated = {
-                    ...currentUser,
-                    role: role,
-                    tier: role === 'Admin' ? 'Enterprise' : (role === 'Dealer' ? 'Commercial' : 'Verified Farmer')
-                };
-                setCurrentUser(updated);
-            };
+      // Modals
+      const [showListModal, setShowListModal] = useState(false);
+      const [showCarrierModal, setShowCarrierModal] = useState(false);
+      const [showInspectorModal, setShowInspectorModal] = useState(false);
+      const [showMechanicModal, setShowMechanicModal] = useState(false);
+      const [showAdModal, setShowAdModal] = useState(false);
+      const [showSubModal, setShowSubModal] = useState(false);
+      const [activeLegalModal, setActiveLegalModal] = useState(null); // 'tos', 'privacy', 'escrow', 'inspectorAgreement'
+      const [selectedPassport, setSelectedPassport] = useState(null);
+      const [adminPassword, setAdminPassword] = useState('');
+      const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
 
-            return (
-                <div className="min-h-screen flex flex-col bg-slate-50">
-                    {/* Top Announcement Bar */}
-                    <div className="bg-slate-900 text-slate-300 text-xs py-2 px-4 flex justify-between items-center border-b border-slate-800">
-                        <div className="flex items-center space-x-4">
-                            <span><i className="fa-solid fa-shield-halved text-agri-500 mr-1"></i> AgriUS Escrow Protected</span>
-                            <span className="hidden md:inline"><i className="fa-solid fa-truck-fast text-blue-400 mr-1"></i> Freight Shipping nationwide</span>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                            <span className="text-slate-400">View mode:</span>
-                            <div className="flex bg-slate-800 p-0.5 rounded text-[11px] font-semibold">
-                                <button 
-                                    onClick={() => handleUserRoleChange('Customer')} 
-                                    className={`px-2 py-0.5 rounded ${currentUser.role === 'Customer' ? 'bg-agri-600 text-white' : 'text-slate-400 hover:text-white'}`}>
-                                    Buyer/Farmer
-                                </button>
-                                <button 
-                                    onClick={() => handleUserRoleChange('Dealer')} 
-                                    className={`px-2 py-0.5 rounded ${currentUser.role === 'Dealer' ? 'bg-agri-600 text-white' : 'text-slate-400 hover:text-white'}`}>
-                                    Commercial Dealer
-                                </button>
-                                <button 
-                                    onClick={() => handleUserRoleChange('Admin')} 
-                                    className={`px-2 py-0.5 rounded ${currentUser.role === 'Admin' ? 'bg-amberGold text-white' : 'text-slate-400 hover:text-white'}`}>
-                                    <i className="fa-solid fa-user-gear mr-1"></i>Admin Mode
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+      // Chat Drawer State
+      const [chatState, setChatState] = useState({ isOpen: false, item: null });
+      const [chatInput, setChatInput] = useState('');
+      const [chatMessages, setChatMessages] = useState([
+        { sender: 'seller', text: 'Hello! Welcome to AgriUS direct escrow negotiation chat.' }
+      ]);
 
-                    {/* Navigation Bar */}
-                    <nav className="sticky top-0 z-40 glass-nav border-b border-slate-200 shadow-sm">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                            <div className="flex justify-between h-16">
-                                <div className="flex items-center space-x-8">
-                                    <div className="flex items-center cursor-pointer" onClick={() => setActiveTab('marketplace')}>
-                                        <div className="bg-agri-700 text-white p-2 rounded-xl mr-2 shadow">
-                                            <i className="fa-solid fa-wheat-awn text-xl"></i>
-                                        </div>
-                                        <div>
-                                            <span className="font-black text-2xl tracking-tight text-slate-900">Agri<span className="text-agri-600">US</span></span>
-                                            <span className="block text-[10px] uppercase font-bold tracking-widest text-slate-400 -mt-1">Commercial Marketplace</span>
-                                        </div>
-                                    </div>
+      // AI Agent State
+      const [isAiOpen, setIsAiOpen] = useState(false);
+      const [aiMessages, setAiMessages] = useState([
+        { sender: 'agent', text: 'Hello! I am AgriUS AI. Ask me about certified on-site inspections, 0.7% Escrow, or Lowboy freight.' }
+      ]);
+      const [aiInput, setAiInput] = useState('');
 
-                                    <div className="hidden lg:flex space-x-1">
-                                        {[
-                                            { id: 'marketplace', label: 'Marketplace', icon: 'fa-store' },
-                                            { id: 'rfq', label: 'RFQ Board', icon: 'fa-file-signature' },
-                                            { id: 'freight', label: 'Freight Calculator', icon: 'fa-calculator' },
-                                            { id: 'subscriptions', label: 'Membership Plans', icon: 'fa-gem' },
-                                        ].map(tab => (
-                                            <button
-                                                key={tab.id}
-                                                onClick={() => setActiveTab(tab.id)}
-                                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2 ${
-                                                    activeTab === tab.id 
-                                                        ? 'bg-agri-50 text-agri-700 font-semibold' 
-                                                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                                                }`}
-                                            >
-                                                <i className={`fa-solid ${tab.icon} text-xs`}></i>
-                                                <span>{tab.label}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+      useEffect(() => {
+        const interval = setInterval(() => {
+          setCurrentAdIndex(prev => (prev + 1) % sponsoredAds.length);
+        }, 5000);
+        return () => clearInterval(interval);
+      }, [sponsoredAds.length]);
 
-                                <div className="flex items-center space-x-3">
-                                    <button 
-                                        onClick={() => setShowNewListingModal(true)}
-                                        className="bg-agri-600 hover:bg-agri-700 text-white font-semibold px-4 py-2 rounded-lg shadow-sm text-sm transition flex items-center space-x-2"
-                                    >
-                                        <i className="fa-solid fa-plus"></i>
-                                        <span>Sell Equipment</span>
-                                    </button>
+      useEffect(() => {
+        localStorage.setItem('agrius_equipment', JSON.stringify(equipmentList));
+        localStorage.setItem('agrius_carriers', JSON.stringify(carriersList));
+        localStorage.setItem('agrius_inspectors', JSON.stringify(inspectorsList));
+        localStorage.setItem('agrius_mechanics', JSON.stringify(mechanicsList));
+      }, [equipmentList, carriersList, inspectorsList, mechanicsList]);
 
-                                    {/* Admin Direct Access Pill */}
-                                    {currentUser.role === 'Admin' && (
-                                        <button 
-                                            onClick={() => setActiveTab('admin')}
-                                            className={`px-3 py-2 rounded-lg text-sm font-semibold flex items-center space-x-1 ${
-                                                activeTab === 'admin' ? 'bg-amber-600 text-white' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
-                                            }`}
-                                        >
-                                            <i className="fa-solid fa-screwdriver-wrench"></i>
-                                            <span>Admin Panel</span>
-                                            {listings.filter(l => l.status === 'pending').length > 0 && (
-                                                <span className="ml-1 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                                                    {listings.filter(l => l.status === 'pending').length}
-                                                </span>
-                                            )}
-                                        </button>
-                                    )}
+      useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+      }, [view, showListModal, showCarrierModal, showInspectorModal, showMechanicModal, showAdModal, showSubModal, activeLegalModal, selectedPassport, chatState, isAiOpen, currentAdIndex]);
 
-                                    {/* User Profile Button */}
-                                    <button 
-                                        onClick={() => setActiveTab('dashboard')}
-                                        className="flex items-center space-x-2 p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 transition"
-                                    >
-                                        <div className="w-8 h-8 bg-slate-800 text-white rounded-full flex items-center justify-center font-bold text-xs">
-                                            {currentUser.name.split(' ').map(n=>n[0]).join('')}
-                                        </div>
-                                        <div className="text-left hidden sm:block text-xs">
-                                            <div className="font-semibold text-slate-800 leading-tight">{currentUser.name}</div>
-                                            <div className="text-agri-600 font-medium">{currentUser.tier}</div>
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </nav>
+      // Form States
+      const [newEquipment, setNewEquipment] = useState({ title: '', category: 'Heavy Machinery', price: '', location: '', weight: '', seller: '', image: '' });
+      const [newCarrier, setNewCarrier] = useState({ name: '', fleet: '', coverage: '', insurance: '', contact: '' });
+      const [newInspector, setNewInspector] = useState({ name: '', company: '', specialty: '', rate: '', location: '', phone: '' });
+      const [newAd, setNewAd] = useState({ title: '', type: 'Dealer', link: '#' });
 
-                    {/* MAIN CONTENT AREA */}
-                    <main className="flex-grow">
-                        {activeTab === 'marketplace' && (
-                            <MarketplaceView 
-                                listings={publicListings} 
-                                categories={['All', 'Tractors', 'Combines & Harvesting', 'Tillage & Planting', 'Sprayers & Applicators', 'Grain Handling']}
-                                selectedCategory={selectedCategory}
-                                setSelectedCategory={setSelectedCategory}
-                                searchQuery={searchQuery}
-                                setSearchQuery={setSearchQuery}
-                                onSelectListing={(item) => setSelectedListing(item)}
-                                onOpenFreight={() => setActiveTab('freight')}
-                            />
-                        )}
+      const handleAddEquipment = (e) => {
+        e.preventDefault();
+        const newItem = {
+          ...newEquipment,
+          id: Date.now(),
+          price: parseFloat(newEquipment.price) || 0,
+          approved: false,
+          vin: `AGRI-${Math.floor(100000 + Math.random() * 900000)}`,
+          healthScore: "95% Verified",
+          image: newEquipment.image || "https://images.unsplash.com/photo-1592861956120-e524fc739696?auto=format&fit=crop&w=800&q=80"
+        };
+        setEquipmentList([newItem, ...equipmentList]);
+        setShowListModal(false);
+        alert("Listing submitted successfully! Pending Admin Approval.");
+      };
 
-                        {activeTab === 'rfq' && (
-                            <RFQBoardView rfqs={rfqs} setRfqs={setRfqs} currentUser={currentUser} />
-                        )}
+      const handleAddInspector = (e) => {
+        e.preventDefault();
+        const item = {
+          ...newInspector,
+          id: `insp-${Date.now()}`,
+          rating: "5.0 ★ (Certified Inspector)",
+          image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80"
+        };
+        setInspectorsList([item, ...inspectorsList]);
+        setShowInspectorModal(false);
+        alert("Inspector Profile published under ESIGN Legal Contract compliance!");
+      };
 
-                        {activeTab === 'freight' && (
-                            <FreightCalculatorView listings={listings} />
-                        )}
+      const handleAddAd = (e) => {
+        e.preventDefault();
+        setSponsoredAds([{ ...newAd, id: `ad-${Date.now()}` }, ...sponsoredAds]);
+        setShowAdModal(false);
+        alert("Sponsored Banner Ad submitted and queued successfully!");
+      };
 
-                        {activeTab === 'subscriptions' && (
-                            <SubscriptionsView 
-                                currentUser={currentUser} 
-                                onSelectPlan={(plan) => {
-                                    setPaymentContext({ type: 'subscription', plan });
-                                    setShowPaymentModal(true);
-                                }} 
-                            />
-                        )}
+      const handleAiQuery = (queryText) => {
+        const q = queryText || aiInput;
+        if (!q.trim()) return;
 
-                        {activeTab === 'dashboard' && (
-                            <UserDashboardView 
-                                currentUser={currentUser} 
-                                listings={listings.filter(l => l.seller === currentUser.name)}
-                                onUpgrade={() => setActiveTab('subscriptions')}
-                                onNewListing={() => setShowNewListingModal(true)}
-                            />
-                        )}
+        setAiMessages(prev => [...prev, { sender: 'user', text: q }]);
+        if (!queryText) setAiInput('');
 
-                        {activeTab === 'admin' && (
-                            <AdminPanelView 
-                                listings={listings}
-                                rfqs={rfqs}
-                                onApproveReject={handleApproveReject}
-                                onDelete={handleDeleteListing}
-                                onEdit={(item) => setEditingListing(item)}
-                                onOpenSupabase={() => setShowSupabaseModal(true)}
-                            />
-                        )}
-                    </main>
+        setTimeout(() => {
+          let reply = "AgriUS AI: I can assist with certified on-site inspections, 0.7% Escrow, or freight logistics.";
+          const lower = q.toLowerCase();
 
-                    {/* ITEM DETAIL MODAL */}
-                    {selectedListing && (
-                        <ItemDetailModal 
-                            item={selectedListing} 
-                            onClose={() => setSelectedListing(null)}
-                            onBuyNow={(item) => {
-                                setPaymentContext({ type: 'checkout', item });
-                                setShowPaymentModal(true);
-                            }}
-                            onCalculateFreight={() => {
-                                setSelectedListing(null);
-                                setActiveTab('freight');
-                            }}
-                        />
-                    )}
+          if (lower.includes('inspect') || lower.includes('فحص') || lower.includes('معاينة')) {
+            reply = "You can dispatch a certified AgriUS inspector to perform a 50-point on-site audit before releasing escrow funds.";
+          } else if (lower.includes('escrow') || lower.includes('0.7')) {
+            reply = "Our transaction fee is just 0.7%, held safely in FDIC-insured escrow accounts until 48h post-delivery.";
+          } else if (lower.includes('dealer') || lower.includes('39')) {
+            reply = "Commercial Dealers pay $39/month for unlimited machinery listings and 3D AR hosting.";
+          }
 
-                    {/* PAYMENT GATEWAY MODAL */}
-                    {showPaymentModal && paymentContext && (
-                        <PaymentGatewayModal 
-                            context={paymentContext} 
-                            currentUser={currentUser}
-                            onClose={() => setShowPaymentModal(false)}
-                            onSuccess={(details) => {
-                                if (paymentContext.type === 'subscription') {
-                                    setCurrentUser({ ...currentUser, tier: paymentContext.plan.name });
-                                    alert(`Payment Successful! Upgraded to ${paymentContext.plan.name} Tier.`);
-                                } else {
-                                    alert(`Escrow Order Processed Successfully! Tracking ID: #${Math.floor(100000 + Math.random() * 900000)}`);
-                                }
-                                setShowPaymentModal(false);
-                            }}
-                        />
-                    )}
+          setAiMessages(prev => [...prev, { sender: 'agent', text: reply }]);
+        }, 800);
+      };
 
-                    {/* NEW / EDIT LISTING MODAL */}
-                    {(showNewListingModal || editingListing) && (
-                        <ListingFormModal 
-                            initialData={editingListing}
-                            onClose={() => { setShowNewListingModal(false); setEditingListing(null); }}
-                            onSubmit={(data) => {
-                                if (editingListing) {
-                                    handleUpdateListing({ ...editingListing, ...data });
-                                } else {
-                                    handleAddListing(data);
-                                }
-                            }}
-                        />
-                    )}
-
-                    {/* SUPABASE CLOUD SETUP MODAL */}
-                    {showSupabaseModal && (
-                        <SupabaseConfigModal onClose={() => setShowSupabaseModal(false)} />
-                    )}
-
-                    {/* FOOTER */}
-                    <footer className="bg-slate-900 text-slate-400 border-t border-slate-800 mt-16 py-12">
-                        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-                            <div>
-                                <div className="flex items-center text-white font-bold text-xl mb-3">
-                                    <i className="fa-solid fa-wheat-awn text-agri-500 mr-2"></i> AgriUS Market
-                                </div>
-                                <p className="text-xs leading-relaxed text-slate-400">
-                                    North America’s leading verified B2B marketplace for heavy agricultural equipment, fleet sales, and bulk crop inputs.
-                                </p>
-                            </div>
-                            <div>
-                                <h4 className="text-white font-semibold text-sm mb-3">Quick Navigation</h4>
-                                <ul className="space-y-2 text-xs">
-                                    <li><a href="#" onClick={() => setActiveTab('marketplace')} className="hover:text-white">Browse Tractors</a></li>
-                                    <li><a href="#" onClick={() => setActiveTab('rfq')} className="hover:text-white">RFQ Buying Requests</a></li>
-                                    <li><a href="#" onClick={() => setActiveTab('freight')} className="hover:text-white">Heavy Freight Rates</a></li>
-                                    <li><a href="#" onClick={() => setActiveTab('subscriptions')} className="hover:text-white">Dealer Membership Tiers</a></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="text-white font-semibold text-sm mb-3">Escrow & Protection</h4>
-                                <p className="text-xs text-slate-400 mb-2">
-                                    All high-value transactions are protected by AgriUS Trade Assurance Escrow. Funds are released only upon delivery inspection.
-                                </p>
-                                <span className="inline-block bg-slate-800 text-agri-400 text-[10px] px-2 py-1 rounded font-mono border border-slate-700">
-                                    <i className="fa-solid fa-lock mr-1"></i> 256-Bit SSL Encrypted
-                                </span>
-                            </div>
-                            <div>
-                                <h4 className="text-white font-semibold text-sm mb-3">Admin Access</h4>
-                                <p className="text-xs text-slate-400 mb-2">Platform Owner or Inspector?</p>
-                                <button 
-                                    onClick={() => { handleUserRoleChange('Admin'); setActiveTab('admin'); }}
-                                    className="w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-2 px-3 rounded border border-slate-700 flex items-center justify-center space-x-2"
-                                >
-                                    <i className="fa-solid fa-key text-amber-400"></i>
-                                    <span>Open Admin Dashboard</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div className="max-w-7xl mx-auto px-4 mt-8 pt-6 border-t border-slate-800 text-center text-xs text-slate-500">
-                            &copy; 2026 AgriUS Marketplace Inc. All rights reserved. Built for U.S. Agriculture & Commercial Dealers.
-                        </div>
-                    </footer>
-                </div>
-            );
-        }
-
-        // ==================== VIEWS ==================== //
-
-        // 1. MARKETPLACE VIEW
-        function MarketplaceView({ listings, categories, selectedCategory, setSelectedCategory, searchQuery, setSearchQuery, onSelectListing, onOpenFreight }) {
-            return (
+      return (
+        <div className="min-h-screen flex flex-col relative">
+          
+          {/* HEADER */}
+          <header className="bg-slate-900 text-white sticky top-0 z-40 border-b border-slate-800 shadow-lg">
+            <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+              <div className="flex items-center gap-3 cursor-pointer" onClick={() => setView('marketplace')}>
+                <div className="bg-emerald-500 p-2 rounded-lg font-black text-slate-950 text-xl tracking-wider">AGRI-US</div>
                 <div>
-                    {/* Hero Header */}
-                    <div className="gradient-banner text-white py-12 px-4">
-                        <div className="max-w-5xl mx-auto text-center">
-                            <span className="inline-block bg-agri-500/20 text-agri-300 font-semibold text-xs px-3 py-1 rounded-full border border-agri-400/30 mb-3">
-                                Verified U.S. Dealer Network
-                            </span>
-                            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
-                                Buy & Sell Heavy Ag Machinery Nationwide
-                            </h1>
-                            <p className="text-slate-200 max-w-2xl mx-auto text-sm md:text-base mb-6">
-                                Transparent listings, verified inspector reports, instant ZIP-to-ZIP heavy freight estimation, and escrow-protected transactions.
-                            </p>
-
-                            {/* Search Box */}
-                            <div className="bg-white p-2 rounded-2xl shadow-xl max-w-3xl mx-auto flex flex-col sm:flex-row gap-2 text-slate-800">
-                                <div className="flex-grow flex items-center px-3 border-r border-slate-200">
-                                    <i className="fa-solid fa-magnifying-glass text-slate-400 mr-2"></i>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Search John Deere, Case IH, Combines, Planters..." 
-                                        className="w-full py-2 text-sm focus:outline-none"
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                    />
-                                </div>
-                                <div className="flex items-center px-3">
-                                    <i className="fa-solid fa-filter text-slate-400 mr-2"></i>
-                                    <select 
-                                        className="py-2 text-sm bg-transparent focus:outline-none font-medium text-slate-700"
-                                        value={selectedCategory}
-                                        onChange={(e) => setSelectedCategory(e.target.value)}
-                                    >
-                                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Category Tabs */}
-                    <div className="max-w-7xl mx-auto px-4 mt-8">
-                        <div className="flex items-center space-x-2 overflow-x-auto pb-2 custom-scrollbar">
-                            {categories.map(cat => (
-                                <button
-                                    key={cat}
-                                    onClick={() => setSelectedCategory(cat)}
-                                    className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition ${
-                                        selectedCategory === cat 
-                                            ? 'bg-slate-900 text-white shadow-md' 
-                                            : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
-                                    }`}
-                                >
-                                    {cat}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Listings Grid */}
-                    <div className="max-w-7xl mx-auto px-4 mt-6">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-bold text-slate-800">Available Machinery ({listings.length})</h2>
-                            <button onClick={onOpenFreight} className="text-xs text-agri-700 font-semibold hover:underline flex items-center">
-                                <i className="fa-solid fa-truck-ramp-box mr-1"></i> Calculate Freight Rates
-                            </button>
-                        </div>
-
-                        {listings.length === 0 ? (
-                            <div className="bg-white rounded-2xl p-12 text-center border border-slate-200">
-                                <i className="fa-solid fa-tractor text-4xl text-slate-300 mb-3"></i>
-                                <h3 className="text-base font-bold text-slate-700">No equipment found matching criteria</h3>
-                                <p className="text-xs text-slate-500 mt-1">Try clearing filters or search queries.</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {listings.map(item => (
-                                    <div 
-                                        key={item.id} 
-                                        className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col cursor-pointer group"
-                                        onClick={() => onSelectListing(item)}
-                                    >
-                                        <div className="relative h-48 bg-slate-100 overflow-hidden">
-                                            <img 
-                                                src={item.image} 
-                                                alt={item.title} 
-                                                className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
-                                            />
-                                            <div className="absolute top-3 left-3 bg-slate-900/80 text-white text-[10px] font-bold px-2.5 py-1 rounded-md backdrop-blur">
-                                                {item.category}
-                                            </div>
-                                            {item.verified && (
-                                                <div className="absolute top-3 right-3 bg-agri-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow flex items-center">
-                                                    <i className="fa-solid fa-circle-check mr-1"></i> Verified
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="p-5 flex-grow flex flex-col justify-between">
-                                            <div>
-                                                <div className="text-xs text-slate-500 font-medium mb-1 flex justify-between">
-                                                    <span><i className="fa-solid fa-location-dot text-red-500 mr-1"></i>{item.location}</span>
-                                                    <span>{item.hours ? `${item.hours} hrs` : 'New'}</span>
-                                                </div>
-                                                <h3 className="font-bold text-slate-900 text-base leading-snug group-hover:text-agri-700 transition">
-                                                    {item.title}
-                                                </h3>
-                                                <p className="text-xs text-slate-500 line-clamp-2 mt-2 leading-relaxed">
-                                                    {item.description}
-                                                </p>
-                                            </div>
-
-                                            <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-                                                <div>
-                                                    <span className="text-xs text-slate-400 block font-semibold">List Price</span>
-                                                    <span className="text-xl font-extrabold text-slate-900">
-                                                        ${item.price.toLocaleString()}
-                                                    </span>
-                                                </div>
-                                                <button className="bg-slate-100 group-hover:bg-agri-600 group-hover:text-white text-slate-700 text-xs font-bold px-3 py-2 rounded-lg transition">
-                                                    View Details
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                  <h1 className="text-xl font-bold tracking-tight text-white">AgriUS Marketplace</h1>
+                  <p className="text-xs text-emerald-400 font-medium">U.S. Machinery, Logistics & Certified On-Site Inspections</p>
                 </div>
-            );
-        }
+              </div>
 
-        // 2. RFQ BOARD VIEW
-        function RFQBoardView({ rfqs, setRfqs, currentUser }) {
-            const [newRfq, setNewRfq] = useState({ item: '', budget: '', zip: '' });
-            const [showModal, setShowModal] = useState(false);
+              <nav className="hidden md:flex items-center gap-4 text-sm font-semibold">
+                <button onClick={() => setView('marketplace')} className={`hover:text-emerald-400 ${view === 'marketplace' ? 'text-emerald-400 border-b-2 border-emerald-400 pb-1' : 'text-slate-300'}`}>
+                  Machinery
+                </button>
+                <button onClick={() => setView('inspectors')} className={`hover:text-emerald-400 ${view === 'inspectors' ? 'text-emerald-400 border-b-2 border-emerald-400 pb-1' : 'text-slate-300'} flex items-center gap-1`}>
+                  <i data-lucide="shield-check" className="w-4 h-4 text-emerald-400"></i> Inspections
+                </button>
+                <button onClick={() => setView('logistics')} className={`hover:text-emerald-400 ${view === 'logistics' ? 'text-emerald-400 border-b-2 border-emerald-400 pb-1' : 'text-slate-300'}`}>
+                  Carriers
+                </button>
+                <button onClick={() => setView('mechanics')} className={`hover:text-emerald-400 ${view === 'mechanics' ? 'text-emerald-400 border-b-2 border-emerald-400 pb-1' : 'text-slate-300'}`}>
+                  Mechanics
+                </button>
+                <button onClick={() => setView('amazonTools')} className={`hover:text-amber-400 ${view === 'amazonTools' ? 'text-amber-400 border-b-2 border-amber-400 pb-1' : 'text-slate-300'}`}>
+                  Amazon Tools
+                </button>
+                <button onClick={() => setView('admin')} className={`hover:text-emerald-400 ${view === 'admin' ? 'text-emerald-400 border-b-2 border-emerald-400 pb-1' : 'text-slate-300'}`}>
+                  Admin
+                </button>
+              </nav>
 
-            const handleCreateRfq = (e) => {
-                e.preventDefault();
-                const rfqObj = {
-                    id: `RFQ-${Math.floor(800 + Math.random() * 100)}`,
-                    item: newRfq.item,
-                    budget: newRfq.budget,
-                    buyer: currentUser.name,
-                    zip: newRfq.zip || currentUser.zip,
-                    status: "Active",
-                    responses: 0
-                };
-                setRfqs([rfqObj, ...rfqs]);
-                setShowModal(false);
-                setNewRfq({ item: '', budget: '', zip: '' });
-            };
+              <div className="flex items-center gap-2">
+                <button onClick={() => setShowAdModal(true)} className="bg-amber-500 hover:bg-amber-600 text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1">
+                  <i data-lucide="megaphone" className="w-3.5 h-3.5"></i> Post Ad
+                </button>
+                <button onClick={() => setShowSubModal(true)} className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                  Dealer ($39/mo)
+                </button>
+              </div>
+            </div>
+          </header>
 
-            return (
-                <div className="max-w-7xl mx-auto px-4 py-8">
-                    <div className="bg-slate-900 rounded-2xl p-8 text-white mb-8 flex flex-col md:flex-row justify-between items-center">
-                        <div>
-                            <span className="bg-agri-600/30 text-agri-400 text-xs font-bold px-3 py-1 rounded-full border border-agri-500/30">Reverse Sourcing</span>
-                            <h2 className="text-2xl md:text-3xl font-extrabold mt-2">Request For Quotes (RFQ Board)</h2>
-                            <p className="text-slate-400 text-xs md:text-sm mt-1 max-w-xl">
-                                Can't find a specific machine or bulk input? Post your requirements and let verified U.S. dealers submit direct competitive bids.
-                            </p>
+          {/* SPONSORED ROTATING ADS TICKER BANNER */}
+          <div className="bg-gradient-to-r from-slate-800 via-indigo-950 to-slate-800 text-amber-300 text-xs py-2 px-4 border-b border-slate-700 shadow-inner flex justify-between items-center">
+            <div className="flex items-center gap-2 mx-auto font-medium">
+              <span className="bg-amber-500 text-slate-950 font-bold px-1.5 py-0.5 rounded text-[10px]">SPONSORED</span>
+              <span>{sponsoredAds[currentAdIndex].title}</span>
+            </div>
+            <button onClick={() => setShowAdModal(true)} className="text-[10px] text-slate-400 hover:text-white underline whitespace-nowrap">
+              Advertise ($19/wk)
+            </button>
+          </div>
+
+          <main className="flex-grow max-w-7xl w-full mx-auto px-4 py-8">
+            
+            {/* VIEW 1: MARKETPLACE */}
+            {view === 'marketplace' && (
+              <div>
+                <div className="mb-8 flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border">
+                  <div>
+                    <h2 className="text-2xl font-black text-slate-900">U.S. Verified Heavy Machinery & Equipment</h2>
+                    <p className="text-sm text-slate-500">Unbeatable 0.7% transaction escrow fee with Certified On-Site Inspection guarantee.</p>
+                  </div>
+                  <button onClick={() => setShowListModal(true)} className="bg-emerald-600 text-white font-bold px-4 py-2.5 rounded-lg text-xs">+ List Equipment</button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {equipmentList.filter(i => i.approved).map(eq => (
+                    <div key={eq.id} className="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col justify-between">
+                      <div>
+                        <div className="relative h-48 bg-slate-100">
+                          <img src={eq.image} alt={eq.title} className="w-full h-full object-cover" />
+                          <span className="absolute top-3 right-3 bg-slate-900/80 text-white text-xs font-semibold px-2.5 py-1 rounded-md">{eq.category}</span>
                         </div>
-                        <button 
-                            onClick={() => setShowModal(true)}
-                            className="mt-4 md:mt-0 bg-agri-600 hover:bg-agri-700 text-white text-sm font-bold px-5 py-3 rounded-xl shadow transition"
-                        >
-                            <i className="fa-solid fa-paper-plane mr-2"></i> Post Sourcing Request
+                        <div className="p-5">
+                          <h3 className="font-bold text-slate-900 text-base mb-1">{eq.title}</h3>
+                          <div className="text-xl font-black text-emerald-600 mb-3">${eq.price.toLocaleString()}</div>
+                          <div className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded border space-y-1">
+                            <div><strong>Location:</strong> {eq.location}</div>
+                            <div><strong>Health Score:</strong> <span className="text-emerald-700 font-bold">{eq.healthScore}</span></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-5 pt-0 space-y-2">
+                        <button onClick={() => setSelectedPassport(eq)} className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2 rounded-lg border flex items-center justify-center gap-1">
+                          <i data-lucide="shield-check" className="w-3.5 h-3.5 text-emerald-600"></i> Agri-VIN Health Passport
                         </button>
-                    </div>
-
-                    {/* RFQ List */}
-                    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                        <div className="p-4 border-b border-slate-200 bg-slate-50 font-bold text-xs text-slate-500 uppercase tracking-wider flex justify-between">
-                            <span>Active Sourcing Demands</span>
-                            <span>{rfqs.length} Total Requests</span>
-                        </div>
-                        <div className="divide-y divide-slate-100">
-                            {rfqs.map(rfq => (
-                                <div key={rfq.id} className="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:bg-slate-50 transition">
-                                    <div>
-                                        <div className="flex items-center space-x-2 mb-1">
-                                            <span className="bg-slate-100 text-slate-700 text-[11px] font-mono font-bold px-2 py-0.5 rounded">
-                                                {rfq.id}
-                                            </span>
-                                            <span className="text-xs text-slate-500">
-                                                By <strong>{rfq.buyer}</strong> (ZIP {rfq.zip})
-                                            </span>
-                                        </div>
-                                        <h3 className="font-bold text-slate-900 text-base">{rfq.item}</h3>
-                                        <div className="text-xs text-slate-500 mt-1">
-                                            Target Budget: <span className="font-semibold text-agri-700">{rfq.budget}</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-end">
-                                        <div className="text-right">
-                                            <span className="text-xs text-slate-500 block">Dealer Quotes</span>
-                                            <span className="text-sm font-bold text-slate-800">{rfq.responses} Bids Received</span>
-                                        </div>
-                                        <button 
-                                            onClick={() => alert(`Submit Bid interface opened for ${rfq.id}`)}
-                                            className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition"
-                                        >
-                                            Submit Bid
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Post RFQ Modal */}
-                    {showModal && (
-                        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-                            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-bold text-lg text-slate-900">Post Buyer RFQ</h3>
-                                    <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600">
-                                        <i className="fa-solid fa-xmark text-lg"></i>
-                                    </button>
-                                </div>
-                                <form onSubmit={handleCreateRfq} className="space-y-4">
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-700 mb-1">Equipment / Seed Needed</label>
-                                        <input 
-                                            type="text" 
-                                            required 
-                                            placeholder="e.g. 2020 John Deere S780 Combine"
-                                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-agri-600"
-                                            value={newRfq.item}
-                                            onChange={e => setNewRfq({...newRfq, item: e.target.value})}
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-700 mb-1">Target Budget ($)</label>
-                                            <input 
-                                                type="text" 
-                                                required 
-                                                placeholder="$150,000"
-                                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-agri-600"
-                                                value={newRfq.budget}
-                                                onChange={e => setNewRfq({...newRfq, budget: e.target.value})}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-700 mb-1">Delivery ZIP Code</label>
-                                            <input 
-                                                type="text" 
-                                                required 
-                                                placeholder="50301"
-                                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-agri-600"
-                                                value={newRfq.zip}
-                                                onChange={e => setNewRfq({...newRfq, zip: e.target.value})}
-                                            />
-                                        </div>
-                                    </div>
-                                    <button type="submit" className="w-full bg-agri-600 hover:bg-agri-700 text-white font-bold py-3 rounded-lg text-sm transition">
-                                        Submit Request to Network
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
-        }
-
-        // 3. FREIGHT CALCULATOR VIEW
-        function FreightCalculatorView({ listings }) {
-            const [originZip, setOriginZip] = useState('50301');
-            const [destZip, setDestZip] = useState('68502');
-            const [weightLbs, setWeightLbs] = useState(32000);
-            const [calculated, setCalculated] = useState(null);
-
-            const handleCalculate = (e) => {
-                e.preventDefault();
-                const o = parseInt(originZip) || 50000;
-                const d = parseInt(destZip) || 60000;
-                const estMiles = Math.abs(o - d) % 1200 + 150;
-                const ratePerMile = weightLbs > 40000 ? 4.5 : 3.2;
-                const baseFreight = estMiles * ratePerMile;
-                const permitFees = weightLbs > 35000 ? 250 : 0;
-                const total = baseFreight + permitFees;
-
-                setCalculated({
-                    miles: estMiles,
-                    baseFreight,
-                    permitFees,
-                    total: Math.round(total)
-                });
-            };
-
-            return (
-                <div className="max-w-4xl mx-auto px-4 py-8">
-                    <div className="text-center mb-8">
-                        <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">Heavy Haul Logistics</span>
-                        <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 mt-2">ZIP-to-ZIP Heavy Freight Calculator</h2>
-                        <p className="text-xs md:text-sm text-slate-500 mt-1">Get instant nationwide haulage estimates for combines, tractors, and wide loads.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Form */}
-                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                            <h3 className="font-bold text-slate-800 text-sm mb-4">Haulage Parameters</h3>
-                            <form onSubmit={handleCalculate} className="space-y-4">
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-700 mb-1">Origin ZIP</label>
-                                        <input 
-                                            type="text" 
-                                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
-                                            value={originZip}
-                                            onChange={e => setOriginZip(e.target.value)}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-700 mb-1">Destination ZIP</label>
-                                        <input 
-                                            type="text" 
-                                            className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
-                                            value={destZip}
-                                            onChange={e => setDestZip(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1">Estimated Equipment Weight (Lbs)</label>
-                                    <input 
-                                        type="number" 
-                                        step="1000"
-                                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
-                                        value={weightLbs}
-                                        onChange={e => setWeightLbs(Number(e.target.value))}
-                                    />
-                                    <span className="text-[10px] text-slate-400 mt-1 block">Standard tractor: ~25,000 lbs | Combine: ~40,000+ lbs</span>
-                                </div>
-
-                                <button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-sm transition flex items-center justify-center space-x-2">
-                                    <i className="fa-solid fa-calculator text-agri-400"></i>
-                                    <span>Calculate Freight Estimate</span>
-                                </button>
-                            </form>
-                        </div>
-
-                        {/* Result */}
-                        <div className="bg-slate-900 text-white p-6 rounded-2xl flex flex-col justify-between shadow-lg">
-                            {calculated ? (
-                                <div>
-                                    <span className="text-agri-400 text-xs font-bold uppercase tracking-wider">Estimate Breakdown</span>
-                                    <div className="text-3xl font-extrabold mt-2 text-white">
-                                        ${calculated.total.toLocaleString()}
-                                    </div>
-                                    <div className="text-xs text-slate-400 mt-1">Est. Transport Distance: {calculated.miles} miles</div>
-
-                                    <div className="mt-6 space-y-3 border-t border-slate-800 pt-4 text-xs">
-                                        <div className="flex justify-between">
-                                            <span className="text-slate-400">Base Flatbed/Stepdeck Haul</span>
-                                            <span className="font-semibold">${calculated.baseFreight.toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-slate-400">Oversize Permits & Escort</span>
-                                            <span className="font-semibold">${calculated.permitFees.toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex justify-between text-agri-400 font-bold pt-2 border-t border-slate-800">
-                                            <span>AgriUS Transport Guarantee</span>
-                                            <span>Included</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
-                                    <i className="fa-solid fa-truck-trailer text-4xl mb-3 text-slate-700"></i>
-                                    <p className="text-xs">Enter Origin and Destination ZIP codes to calculate real-time heavy transport estimates.</p>
-                                </div>
-                            )}
-
-                            <div className="mt-6 bg-slate-800/80 rounded-xl p-3 text-[11px] text-slate-400 border border-slate-700">
-                                <i className="fa-solid fa-circle-info text-blue-400 mr-1"></i>
-                                Freight quotes are finalized upon booking with verified AgriUS Carrier Partners.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        // 4. SUBSCRIPTIONS VIEW
-        function SubscriptionsView({ currentUser, onSelectPlan }) {
-            const PLANS = [
-                {
-                    name: "Verified Farmer",
-                    price: 0,
-                    period: "Free Forever",
-                    features: ["Browse & Buy Equipment", "Trade Assurance Protection", "Post up to 2 Listings/yr", "Basic ZIP Freight Estimates"],
-                    cta: "Current Standard",
-                    highlight: false
-                },
-                {
-                    name: "Commercial Dealer",
-                    price: 199,
-                    period: "per month",
-                    features: ["Unlimited Machinery Listings", "Verified Dealer Badge", "Direct RFQ Bidding Board", "Priority Support & Escrow", "Analytics Dashboard"],
-                    cta: "Upgrade to Commercial",
-                    highlight: true
-                },
-                {
-                    name: "Enterprise Manufacturer",
-                    price: 499,
-                    period: "per month",
-                    features: ["Everything in Commercial", "Dedicated Account Manager", "API Inventory Sync", "Featured Search Placement", "Zero Escrow Fee Tier"],
-                    cta: "Subscribe Enterprise",
-                    highlight: false
-                }
-            ];
-
-            return (
-                <div className="max-w-7xl mx-auto px-4 py-12">
-                    <div className="text-center max-w-3xl mx-auto mb-12">
-                        <span className="bg-agri-100 text-agri-800 text-xs font-bold px-3 py-1 rounded-full">Membership Tiers</span>
-                        <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mt-3">Dealer & Seller Subscription Plans</h2>
-                        <p className="text-slate-600 text-sm mt-2">Scale your agricultural equipment fleet sales nationwide with verified buyer protection.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {PLANS.map((plan, idx) => (
-                            <div 
-                                key={idx}
-                                className={`bg-white rounded-3xl p-8 border flex flex-col justify-between relative transition ${
-                                    plan.highlight 
-                                        ? 'border-2 border-agri-600 shadow-xl ring-4 ring-agri-600/10' 
-                                        : 'border-slate-200 shadow-sm hover:shadow-md'
-                                }`}
-                            >
-                                {plan.highlight && (
-                                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-agri-600 text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-                                        Most Popular For Dealers
-                                    </span>
-                                )}
-
-                                <div>
-                                    <h3 className="font-extrabold text-slate-900 text-xl">{plan.name}</h3>
-                                    <div className="mt-4 flex items-baseline text-slate-900">
-                                        <span className="text-4xl font-black tracking-tight">${plan.price}</span>
-                                        <span className="ml-1 text-slate-500 text-xs font-semibold">{plan.period}</span>
-                                    </div>
-
-                                    <ul className="mt-6 space-y-3 text-xs text-slate-600">
-                                        {plan.features.map((feat, fidx) => (
-                                            <li key={fidx} className="flex items-center">
-                                                <i className="fa-solid fa-check text-agri-600 mr-2 text-sm"></i>
-                                                <span>{feat}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-
-                                <div className="mt-8">
-                                    <button
-                                        disabled={currentUser.tier === plan.name}
-                                        onClick={() => onSelectPlan(plan)}
-                                        className={`w-full py-3 rounded-xl font-bold text-sm transition ${
-                                            currentUser.tier === plan.name
-                                                ? 'bg-slate-100 text-slate-400 cursor-default'
-                                                : plan.highlight 
-                                                    ? 'bg-agri-600 hover:bg-agri-700 text-white shadow-md' 
-                                                    : 'bg-slate-900 hover:bg-slate-800 text-white'
-                                        }`}
-                                    >
-                                        {currentUser.tier === plan.name ? 'Active Plan' : plan.cta}
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            );
-        }
-
-        // 5. USER DASHBOARD VIEW
-        function UserDashboardView({ currentUser, listings, onUpgrade, onNewListing }) {
-            return (
-                <div className="max-w-7xl mx-auto px-4 py-8">
-                    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div className="flex items-center space-x-4">
-                            <div className="w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center font-bold text-xl shadow">
-                                {currentUser.name.split(' ').map(n=>n[0]).join('')}
-                            </div>
-                            <div>
-                                <h2 className="text-xl font-bold text-slate-900">{currentUser.name}</h2>
-                                <div className="flex items-center space-x-2 text-xs text-slate-500 mt-0.5">
-                                    <span>{currentUser.email}</span>
-                                    <span>•</span>
-                                    <span className="text-agri-700 font-semibold">{currentUser.tier} Tier</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center space-x-3">
-                            <button onClick={onUpgrade} className="bg-agri-50 hover:bg-agri-100 text-agri-800 text-xs font-bold px-4 py-2.5 rounded-lg border border-agri-200 transition">
-                                <i className="fa-solid fa-crown text-amber-500 mr-1.5"></i> Manage Membership
-                            </button>
-                            <button onClick={onNewListing} className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow transition">
-                                <i className="fa-solid fa-plus mr-1.5"></i> New Listing
-                            </button>
-                        </div>
-                    </div>
-
-                    <h3 className="font-bold text-slate-800 text-base mb-4">My Machinery Listings ({listings.length})</h3>
-
-                    {listings.length === 0 ? (
-                        <div className="bg-white rounded-2xl p-12 text-center border border-slate-200">
-                            <i className="fa-solid fa-box-open text-4xl text-slate-300 mb-3"></i>
-                            <h4 className="text-sm font-bold text-slate-700">No active equipment posted</h4>
-                            <p className="text-xs text-slate-500 mt-1 mb-4">You have not created any sales listings yet.</p>
-                            <button onClick={onNewListing} className="bg-agri-600 text-white text-xs font-bold px-4 py-2 rounded-lg">
-                                Create First Listing
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {listings.map(item => (
-                                <div key={item.id} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm relative">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
-                                            item.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
-                                        }`}>
-                                            {item.status}
-                                        </span>
-                                        <span className="font-mono text-xs text-slate-400">{item.id}</span>
-                                    </div>
-                                    <h4 className="font-bold text-slate-900 text-sm line-clamp-1">{item.title}</h4>
-                                    <div className="text-base font-extrabold text-agri-700 mt-1">${item.price.toLocaleString()}</div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            );
-        }
-
-        // 6. ADMIN PANEL VIEW (FULL CRUD & APPROVALS)
-        function AdminPanelView({ listings, rfqs, onApproveReject, onDelete, onEdit, onOpenSupabase }) {
-            const [filter, setFilter] = useState('all'); // all, pending, approved
-
-            const filteredListings = listings.filter(item => {
-                if (filter === 'pending') return item.status === 'pending';
-                if (filter === 'approved') return item.status === 'approved';
-                return true;
-            });
-
-            return (
-                <div className="max-w-7xl mx-auto px-4 py-8">
-                    {/* Admin Header */}
-                    <div className="bg-slate-900 rounded-2xl p-6 text-white mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-l-4 border-amberGold">
-                        <div>
-                            <div className="flex items-center space-x-2">
-                                <span className="bg-amber-500/20 text-amber-400 text-xs font-mono font-bold px-2.5 py-0.5 rounded border border-amber-500/30">
-                                    ADMIN SUPERUSER MODE
-                                </span>
-                                <span className="text-slate-400 text-xs">Full CRUD & Platform Control</span>
-                            </div>
-                            <h2 className="text-2xl font-black mt-1">Platform Operations Control Center</h2>
-                        </div>
-
-                        <div className="flex items-center space-x-3">
-                            <button 
-                                onClick={onOpenSupabase}
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition flex items-center space-x-2"
-                            >
-                                <i className="fa-solid fa-database"></i>
-                                <span>Supabase Database Config</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Stats Overview */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                            <span className="text-xs text-slate-500 font-medium">Total Machinery Listings</span>
-                            <div className="text-2xl font-black text-slate-900 mt-1">{listings.length}</div>
-                        </div>
-                        <div className="bg-white p-5 rounded-2xl border border-amber-200 bg-amber-50/50 shadow-sm">
-                            <span className="text-xs text-amber-800 font-medium">Pending Moderation</span>
-                            <div className="text-2xl font-black text-amber-900 mt-1">
-                                {listings.filter(l => l.status === 'pending').length}
-                            </div>
-                        </div>
-                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                            <span className="text-xs text-slate-500 font-medium">Active RFQs</span>
-                            <div className="text-2xl font-black text-slate-900 mt-1">{rfqs.length}</div>
-                        </div>
-                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                            <span className="text-xs text-slate-500 font-medium">Cloud Sync Status</span>
-                            <div className="text-xs font-bold text-agri-600 mt-2 flex items-center">
-                                <span className="w-2 h-2 bg-agri-500 rounded-full mr-2 animate-pulse"></span> Local Storage Active
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Listings Management Table */}
-                    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                        <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center flex-wrap gap-2">
-                            <h3 className="font-bold text-slate-800 text-sm">Machinery Catalog Management</h3>
-                            
-                            <div className="flex bg-slate-200 p-1 rounded-lg text-xs font-semibold">
-                                {['all', 'pending', 'approved'].map(f => (
-                                    <button 
-                                        key={f}
-                                        onClick={() => setFilter(f)}
-                                        className={`px-3 py-1 rounded-md capitalize ${filter === f ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'}`}
-                                    >
-                                        {f}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse text-xs">
-                                <thead>
-                                    <tr className="border-b border-slate-200 bg-slate-100 text-slate-500 uppercase font-semibold">
-                                        <th className="p-3">Item</th>
-                                        <th className="p-3">Category</th>
-                                        <th className="p-3">Price</th>
-                                        <th className="p-3">Seller</th>
-                                        <th className="p-3">Status</th>
-                                        <th className="p-3 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {filteredListings.map(item => (
-                                        <tr key={item.id} className="hover:bg-slate-50">
-                                            <td className="p-3 font-medium text-slate-900 flex items-center space-x-3">
-                                                <img src={item.image} className="w-10 h-10 object-cover rounded-lg" />
-                                                <div>
-                                                    <div className="font-bold">{item.title}</div>
-                                                    <div className="text-[10px] text-slate-400 font-mono">{item.id}</div>
-                                                </div>
-                                            </td>
-                                            <td className="p-3 text-slate-600">{item.category}</td>
-                                            <td className="p-3 font-bold text-slate-900">${item.price.toLocaleString()}</td>
-                                            <td className="p-3 text-slate-600">{item.seller}</td>
-                                            <td className="p-3">
-                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                                                    item.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
-                                                }`}>
-                                                    {item.status}
-                                                </span>
-                                            </td>
-                                            <td className="p-3 text-right space-x-2">
-                                                {item.status === 'pending' && (
-                                                    <button 
-                                                        onClick={() => onApproveReject(item.id, 'approved')}
-                                                        className="bg-agri-600 hover:bg-agri-700 text-white px-2.5 py-1 rounded font-bold"
-                                                    >
-                                                        Approve
-                                                    </button>
-                                                )}
-                                                <button 
-                                                    onClick={() => onEdit(item)}
-                                                    className="bg-slate-200 hover:bg-slate-300 text-slate-800 px-2.5 py-1 rounded font-bold"
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button 
-                                                    onClick={() => onDelete(item.id)}
-                                                    className="bg-red-100 hover:bg-red-200 text-red-700 px-2.5 py-1 rounded font-bold"
-                                                >
-                                                    Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        // ==================== MODALS ==================== //
-
-        // 1. PAYMENT GATEWAY INTEGRATION MODAL
-        function PaymentGatewayModal({ context, currentUser, onClose, onSuccess }) {
-            const [method, setMethod] = useState('card'); // card, escrow, ach
-            const [loading, setLoading] = useState(false);
-            const [cardDetails, setCardDetails] = useState({ number: '4242 •••• •••• 4242', exp: '12/28', cvv: '888' });
-
-            const amount = context.type === 'subscription' ? context.plan.price : context.item.price;
-
-            const handleSubmit = (e) => {
-                e.preventDefault();
-                setLoading(true);
-                setTimeout(() => {
-                    setLoading(false);
-                    onSuccess();
-                }, 1800);
-            };
-
-            return (
-                <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200">
-                        <div className="bg-slate-900 text-white p-6 flex justify-between items-center">
-                            <div>
-                                <span className="text-agri-400 text-xs font-bold uppercase tracking-wider">AgriUS Payment Gateway</span>
-                                <h3 className="text-lg font-extrabold mt-0.5">
-                                    {context.type === 'subscription' ? `Subscribe: ${context.plan.name}` : `Escrow Checkout: ${context.item.title}`}
-                                </h3>
-                            </div>
-                            <button onClick={onClose} className="text-slate-400 hover:text-white">
-                                <i className="fa-solid fa-xmark text-xl"></i>
-                            </button>
-                        </div>
-
-                        <div className="p-6">
-                            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex justify-between items-center mb-6">
-                                <span className="text-xs text-slate-500 font-semibold">Total Amount Due</span>
-                                <span className="text-2xl font-black text-slate-900">${amount.toLocaleString()}</span>
-                            </div>
-
-                            {/* Payment Options */}
-                            <div className="grid grid-cols-3 gap-2 mb-6">
-                                {[
-                                    { id: 'card', label: 'Credit Card', icon: 'fa-credit-card' },
-                                    { id: 'escrow', label: 'Agri Escrow', icon: 'fa-shield-halved' },
-                                    { id: 'ach', label: 'ACH Wire', icon: 'fa-building-columns' }
-                                ].map(m => (
-                                    <button
-                                        key={m.id}
-                                        type="button"
-                                        onClick={() => setMethod(m.id)}
-                                        className={`p-3 rounded-xl border text-xs font-bold flex flex-col items-center space-y-1 transition ${
-                                            method === m.id ? 'border-agri-600 bg-agri-50 text-agri-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                                        }`}
-                                    >
-                                        <i className={`fa-solid ${m.icon} text-base`}></i>
-                                        <span>{m.label}</span>
-                                    </button>
-                                ))}
-                            </div>
-
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                {method === 'card' && (
-                                    <>
-                                        <div>
-                                            <label className="block text-xs font-semibold text-slate-700 mb-1">Card Number</label>
-                                            <input 
-                                                type="text" 
-                                                required 
-                                                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono"
-                                                value={cardDetails.number}
-                                                onChange={e => setCardDetails({...cardDetails, number: e.target.value})}
-                                            />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div>
-                                                <label className="block text-xs font-semibold text-slate-700 mb-1">Expires</label>
-                                                <input 
-                                                    type="text" 
-                                                    required 
-                                                    className="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono"
-                                                    value={cardDetails.exp}
-                                                    onChange={e => setCardDetails({...cardDetails, exp: e.target.value})}
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-semibold text-slate-700 mb-1">CVC / CVV</label>
-                                                <input 
-                                                    type="text" 
-                                                    required 
-                                                    className="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono"
-                                                    value={cardDetails.cvv}
-                                                    onChange={e => setCardDetails({...cardDetails, cvv: e.target.value})}
-                                                />
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-
-                                {method === 'escrow' && (
-                                    <div className="bg-amber-50 p-4 rounded-xl border border-amber-200 text-xs text-amber-900 leading-relaxed">
-                                        <i className="fa-solid fa-lock text-amber-600 mr-1.5"></i>
-                                        <strong>AgriUS Trade Escrow:</strong> Your funds are held securely in a U.S. FDIC-insured trust account and will only be released to the seller after equipment delivery inspection.
-                                    </div>
-                                )}
-
-                                {method === 'ach' && (
-                                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 text-xs text-blue-900 leading-relaxed font-mono">
-                                        Bank: First National Ag Bank<br/>
-                                        Routing: 121000358<br/>
-                                        Account: 8839019284<br/>
-                                        Reference: {context.type.toUpperCase()}-{Math.floor(1000+Math.random()*9000)}
-                                    </div>
-                                )}
-
-                                <button 
-                                    type="submit" 
-                                    disabled={loading}
-                                    className="w-full bg-agri-600 hover:bg-agri-700 text-white font-extrabold py-3.5 rounded-xl text-sm transition shadow-lg flex items-center justify-center space-x-2"
-                                >
-                                    {loading ? (
-                                        <>
-                                            <i className="fa-solid fa-circle-notch fa-spin"></i>
-                                            <span>Processing Secured Payment...</span>
-                                        </>
-                                    ) : (
-                                        <span>Confirm & Pay ${amount.toLocaleString()}</span>
-                                    )}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        // 2. ITEM DETAIL MODAL
-        function ItemDetailModal({ item, onClose, onBuyNow, onCalculateFreight }) {
-            return (
-                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-slate-200 my-8">
-                        <div className="relative h-64 bg-slate-100">
-                            <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                            <button onClick={onClose} className="absolute top-4 right-4 bg-slate-900/70 text-white w-9 h-9 rounded-full flex items-center justify-center">
-                                <i className="fa-solid fa-xmark"></i>
-                            </button>
-                        </div>
-
-                        <div className="p-6">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <span className="text-xs font-bold text-agri-700 uppercase tracking-wider">{item.category}</span>
-                                    <h2 className="text-2xl font-black text-slate-900 mt-1">{item.title}</h2>
-                                    <span className="text-xs text-slate-500"><i className="fa-solid fa-location-dot text-red-500 mr-1"></i>{item.location}</span>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-xs text-slate-400 block font-semibold">List Price</span>
-                                    <span className="text-2xl font-extrabold text-slate-900">${item.price.toLocaleString()}</span>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-3 my-6 bg-slate-50 p-4 rounded-xl border border-slate-200 text-center text-xs">
-                                <div>
-                                    <span className="text-slate-400 block">Hours</span>
-                                    <span className="font-bold text-slate-800">{item.hours ? `${item.hours} hrs` : 'N/A'}</span>
-                                </div>
-                                <div>
-                                    <span className="text-slate-400 block">Horsepower</span>
-                                    <span className="font-bold text-slate-800">{item.hp ? `${item.hp} HP` : 'N/A'}</span>
-                                </div>
-                                <div>
-                                    <span className="text-slate-400 block">Condition</span>
-                                    <span className="font-bold text-slate-800">{item.condition}</span>
-                                </div>
-                            </div>
-
-                            <p className="text-xs text-slate-600 leading-relaxed mb-6">{item.description}</p>
-
-                            <div className="flex flex-col sm:flex-row gap-3">
-                                <button 
-                                    onClick={() => onBuyNow(item)}
-                                    className="flex-grow bg-agri-600 hover:bg-agri-700 text-white font-bold py-3 rounded-xl text-sm transition shadow"
-                                >
-                                    <i className="fa-solid fa-shield-halved mr-2"></i> Buy via Escrow Protection
-                                </button>
-                                <button 
-                                    onClick={onCalculateFreight}
-                                    className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-4 py-3 rounded-xl text-sm transition"
-                                >
-                                    Freight Rates
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        // 3. CREATE / EDIT LISTING MODAL
-        function ListingFormModal({ initialData, onClose, onSubmit }) {
-            const [formData, setFormData] = useState(initialData || {
-                title: '',
-                category: 'Tractors',
-                price: '',
-                location: 'Des Moines, IA',
-                zip: '50301',
-                hours: '',
-                hp: '',
-                condition: 'Excellent',
-                description: '',
-                image: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=800&q=80'
-            });
-
-            const handleSubmit = (e) => {
-                e.preventDefault();
-                onSubmit({
-                    ...formData,
-                    price: Number(formData.price),
-                    hours: Number(formData.hours),
-                    hp: Number(formData.hp)
-                });
-            };
-
-            return (
-                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-bold text-lg text-slate-900">
-                                {initialData ? 'Edit Equipment Listing' : 'Post Equipment for Sale'}
-                            </h3>
-                            <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
-                                <i className="fa-solid fa-xmark text-lg"></i>
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-                            <div>
-                                <label className="block font-semibold text-slate-700 mb-1">Equipment Title</label>
-                                <input 
-                                    type="text" 
-                                    required 
-                                    placeholder="2021 John Deere 8R 410"
-                                    className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
-                                    value={formData.title}
-                                    onChange={e => setFormData({...formData, title: e.target.value})}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block font-semibold text-slate-700 mb-1">Category</label>
-                                    <select 
-                                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
-                                        value={formData.category}
-                                        onChange={e => setFormData({...formData, category: e.target.value})}
-                                    >
-                                        {['Tractors', 'Combines & Harvesting', 'Tillage & Planting', 'Sprayers & Applicators', 'Grain Handling'].map(c => (
-                                            <option key={c} value={c}>{c}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block font-semibold text-slate-700 mb-1">Price ($USD)</label>
-                                    <input 
-                                        type="number" 
-                                        required 
-                                        placeholder="150000"
-                                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
-                                        value={formData.price}
-                                        onChange={e => setFormData({...formData, price: e.target.value})}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block font-semibold text-slate-700 mb-1">Location City, State</label>
-                                    <input 
-                                        type="text" 
-                                        required 
-                                        placeholder="Fargo, ND"
-                                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
-                                        value={formData.location}
-                                        onChange={e => setFormData({...formData, location: e.target.value})}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block font-semibold text-slate-700 mb-1">ZIP Code</label>
-                                    <input 
-                                        type="text" 
-                                        required 
-                                        placeholder="58102"
-                                        className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
-                                        value={formData.zip}
-                                        onChange={e => setFormData({...formData, zip: e.target.value})}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block font-semibold text-slate-700 mb-1">Description</label>
-                                <textarea 
-                                    rows="3" 
-                                    className="w-full border border-slate-300 rounded-lg p-2.5 text-sm"
-                                    value={formData.description}
-                                    onChange={e => setFormData({...formData, description: e.target.value})}
-                                ></textarea>
-                            </div>
-
-                            <button type="submit" className="w-full bg-agri-600 hover:bg-agri-700 text-white font-bold py-3 rounded-xl text-sm transition">
-                                Save & Submit Listing
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            );
-        }
-
-        // 4. SUPABASE CONFIG MODAL
-        function SupabaseConfigModal({ onClose }) {
-            const [url, setUrl] = useState('https://mwauuqxszjdyjuitblza.supabase.co');
-            const [key, setKey] = useState('sb_publishable_grvtL6UsKrbV9xYlDRLjww_XuJVTLmA');
-
-            return (
-                <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
-                        <div className="flex justify-between items-center mb-4">
-                            <div className="flex items-center space-x-2">
-                                <i className="fa-solid fa-database text-emerald-600 text-lg"></i>
-                                <h3 className="font-bold text-slate-900 text-base">Supabase Cloud Database Config</h3>
-                            </div>
-                            <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
-                                <i className="fa-solid fa-xmark text-lg"></i>
-                            </button>
-                        </div>
-
-                        <p className="text-xs text-slate-500 mb-4 leading-relaxed">
-                            Connect your real Supabase cloud PostgreSQL instance to sync equipment, dealers, and escrow orders online across users.
-                        </p>
-
-                        <div className="space-y-3 text-xs mb-6">
-                            <div>
-                                <label className="block font-semibold text-slate-700 mb-1">Supabase Project URL</label>
-                                <input 
-                                    type="text" 
-                                    placeholder="https://xyzcompany.supabase.co" 
-                                    className="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-xs"
-                                    value={url}
-                                    onChange={e => setUrl(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <label className="block font-semibold text-slate-700 mb-1">Anon Public API Key</label>
-                                <input 
-                                    type="password" 
-                                    placeholder="eyJhbGciOiJIUzI1NiIsInR..." 
-                                    className="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-xs"
-                                    value={key}
-                                    onChange={e => setKey(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        <button 
-                            onClick={() => { alert("Supabase configuration saved! (In live mode, cloud tables will connect)"); onClose(); }}
-                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs transition"
-                        >
-                            Save Cloud Connection Keys
+                        <button onClick={() => alert("Initiating 0.7% Escrow Checkout with On-Site Inspector dispatch option...")} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 text-xs rounded-lg">
+                          Buy with 0.7% Escrow
                         </button>
+                      </div>
                     </div>
+                  ))}
                 </div>
-            );
-        }
+              </div>
+            )}
 
-        // Render Application
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+            {/* VIEW 2: CERTIFIED ON-SITE INSPECTORS NETWORK */}
+            {view === 'inspectors' && (
+              <div>
+                <div className="mb-8 flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border">
+                  <div>
+                    <h2 className="text-2xl font-black text-slate-900">AgriUS Certified On-Site Inspectors Network</h2>
+                    <p className="text-xs text-slate-500">Dispatch a certified independent inspector to audit any heavy machinery before releasing escrow funds.</p>
+                  </div>
+                  <button onClick={() => setShowInspectorModal(true)} className="bg-indigo-600 text-white font-bold px-4 py-2.5 rounded-lg text-xs">
+                    + Register as Certified Inspector
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {inspectorsList.map(insp => (
+                    <div key={insp.id} className="bg-white border rounded-xl p-6 shadow-sm flex flex-col justify-between">
+                      <div>
+                        <div className="flex gap-4 items-start mb-4">
+                          <img src={insp.image} alt={insp.name} className="w-16 h-16 rounded-xl object-cover border" />
+                          <div>
+                            <h3 className="font-bold text-slate-900 text-base">{insp.name}</h3>
+                            <p className="text-xs text-slate-500 font-semibold">{insp.company}</p>
+                            <span className="inline-block bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded mt-1">ESIGN Contractor Verified</span>
+                          </div>
+                        </div>
+                        <div className="text-xs text-slate-700 bg-slate-50 p-3 rounded-lg border space-y-1 mb-4">
+                          <div><strong>Specialty:</strong> {insp.specialty}</div>
+                          <div><strong>Audit Fee:</strong> <span className="text-emerald-700 font-bold">{insp.rate}</span></div>
+                          <div><strong>Service Region:</strong> {insp.location}</div>
+                          <div><strong>Rating:</strong> {insp.rating}</div>
+                        </div>
+                      </div>
+                      <button onClick={() => alert(`Dispatching Inspector ${insp.name} for on-site 50-point audit...`)} className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 text-xs rounded-lg">
+                        Book Certified On-Site Audit ($350)
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 3: CARRIERS */}
+            {view === 'logistics' && (
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 mb-6">U.S. Lowboy Freight Carriers</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {carriersList.map(car => (
+                    <div key={car.id} className="bg-white border rounded-xl p-6 shadow-sm">
+                      <h3 className="font-bold text-slate-900 text-lg mb-1">{car.name}</h3>
+                      <p className="text-xs text-slate-500 mb-3">{car.fleet}</p>
+                      <div className="text-xs text-slate-700 bg-slate-50 p-3 rounded border space-y-1 mb-4">
+                        <div><strong>Coverage:</strong> {car.coverage}</div>
+                        <div><strong>Insurance:</strong> <span className="text-emerald-700 font-bold">{car.insurance}</span></div>
+                      </div>
+                      <button onClick={() => alert("Requesting freight quote...")} className="w-full bg-slate-900 text-white font-bold py-2.5 text-xs rounded-lg">Request Quote</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 4: MECHANICS */}
+            {view === 'mechanics' && (
+              <div>
+                <h2 className="text-2xl font-black text-slate-900 mb-6">Certified Mobile Mechanics</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {mechanicsList.map(mech => (
+                    <div key={mech.id} className="bg-white border rounded-xl p-5 shadow-sm flex gap-4 items-center">
+                      <img src={mech.image} alt={mech.name} className="w-20 h-20 rounded-xl object-cover border" />
+                      <div>
+                        <h3 className="font-bold text-slate-900 text-base">{mech.name}</h3>
+                        <p className="text-xs text-slate-500">{mech.company}</p>
+                        <div className="text-xs text-indigo-700 font-bold mt-1">Specialty: {mech.specialty}</div>
+                        <div className="text-xs text-slate-600 mt-1">Rate: <span className="text-emerald-600 font-black">{mech.rate}</span></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 5: AMAZON TOOLS */}
+            {view === 'amazonTools' && (
+              <div>
+                <div className="mb-8 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 p-6 rounded-xl shadow-md">
+                  <h2 className="text-2xl font-black mb-1">Manual Farm Tools & Gear (Amazon Storefront)</h2>
+                  <p className="text-xs font-medium text-slate-900">Top-rated hand tools and mechanics kits fulfilled directly by Amazon Prime.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {amazonTools.map(tool => (
+                    <div key={tool.id} className="bg-white rounded-xl border p-5 flex gap-4 items-center">
+                      <img src={tool.image} alt={tool.title} className="w-32 h-32 object-cover rounded-lg" />
+                      <div>
+                        <h3 className="font-bold text-slate-900 text-sm mb-1">{tool.title}</h3>
+                        <div className="text-lg font-black text-amber-600 mb-2">${tool.price}</div>
+                        <a href={tool.amazonUrl} target="_blank" rel="noopener noreferrer" className="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded text-xs inline-block">
+                          Buy on Amazon
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 6: ADMIN */}
+            {view === 'admin' && (
+              <div className="bg-white p-8 rounded-xl shadow-sm border">
+                {!isAdminAuthenticated ? (
+                  <div className="max-w-md mx-auto text-center py-12">
+                    <h2 className="text-xl font-bold text-slate-900 mb-4">Owner Admin Login</h2>
+                    <input type="password" placeholder="Password (admin123)" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} className="w-full p-2.5 border rounded-lg mb-3 text-center text-sm" />
+                    <button onClick={() => { if (adminPassword === 'admin123') setIsAdminAuthenticated(true); else alert("Wrong password"); }} className="w-full bg-slate-900 text-white font-bold py-2.5 rounded-lg text-sm">Login</button>
+                  </div>
+                ) : (
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-900 mb-2">Admin Control Center</h2>
+                    <p className="text-xs text-slate-500">Active Listings: {equipmentList.length} | Certified Inspectors: {inspectorsList.length} | Fleets: {carriersList.length}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </main>
+
+          {/* MODAL: REGISTER CERTIFIED INSPECTOR */}
+          {showInspectorModal && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-xl shadow-2xl max-w-xl w-full p-6 text-xs max-h-[90vh] overflow-y-auto space-y-4">
+                <div className="flex justify-between items-center border-b pb-2">
+                  <h3 className="font-bold text-base text-slate-900">Certified Inspector Registration & ESIGN Contract</h3>
+                  <button onClick={() => setShowInspectorModal(false)} className="font-bold">✕</button>
+                </div>
+                
+                <div className="bg-slate-50 p-3 rounded-lg border text-[11px] text-slate-600 max-h-36 overflow-y-auto leading-relaxed">
+                  <strong className="text-slate-900">AgriUS Certified Inspector Agreement Summary:</strong>
+                  <p className="mt-1">By submitting this registration, you agree to operate as an independent contractor (1099), execute 50-point equipment audits in compliance with AgriUS standards, carry professional liability insurance, and assign inspection copyright to AgriUS Marketplace LLC.</p>
+                </div>
+
+                <form onSubmit={handleAddInspector} className="space-y-3">
+                  <input type="text" placeholder="Full Name & Certifications (e.g. ASE Master)" required className="w-full p-2 border rounded" value={newInspector.name} onChange={e => setNewInspector({...newInspector, name: e.target.value})} />
+                  <input type="text" placeholder="Company / Inspection Unit Name" required className="w-full p-2 border rounded" value={newInspector.company} onChange={e => setNewInspector({...newInspector, company: e.target.value})} />
+                  <input type="text" placeholder="Specialty (e.g. Hydraulics, Powertrain)" required className="w-full p-2 border rounded" value={newInspector.specialty} onChange={e => setNewInspector({...newInspector, specialty: e.target.value})} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input type="text" placeholder="Audit Fee ($350)" required className="p-2 border rounded" value={newInspector.rate} onChange={e => setNewInspector({...newInspector, rate: e.target.value})} />
+                    <input type="text" placeholder="Phone Number" required className="p-2 border rounded" value={newInspector.phone} onChange={e => setNewInspector({...newInspector, phone: e.target.value})} />
+                  </div>
+                  <input type="text" placeholder="Service Region (State/States)" required className="w-full p-2 border rounded" value={newInspector.location} onChange={e => setNewInspector({...newInspector, location: e.target.value})} />
+                  <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded text-xs">Agree & Sign as Certified Inspector</button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL: POST SPONSORED AD */}
+          {showAdModal && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 text-xs">
+                <div className="flex justify-between items-center border-b pb-2 mb-4">
+                  <h3 className="font-bold text-base text-slate-900">Publish Sponsored Banner Ad ($19/wk)</h3>
+                  <button onClick={() => setShowAdModal(false)} className="font-bold">✕</button>
+                </div>
+                <form onSubmit={handleAddAd} className="space-y-3">
+                  <input type="text" placeholder="Ad Title / Message" required className="w-full p-2 border rounded" value={newAd.title} onChange={e => setNewAd({...newAd, title: e.target.value})} />
+                  <select className="w-full p-2 border rounded" value={newAd.type} onChange={e => setNewAd({...newAd, type: e.target.value})}>
+                    <option>Dealer</option>
+                    <option>Logistics</option>
+                    <option>Inspection</option>
+                  </select>
+                  <button type="submit" className="w-full bg-amber-500 text-slate-950 font-bold py-2.5 rounded text-xs mt-2">Publish Ad ($19/wk)</button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* FLOATING AI SUPPORT */}
+          <div className="fixed bottom-4 right-4 z-40">
+            {!isAiOpen ? (
+              <button onClick={() => setIsAiOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white p-3.5 rounded-full shadow-2xl flex items-center gap-2 text-xs font-bold transition">
+                <i data-lucide="sparkles" className="w-5 h-5"></i>
+                <span>Agri-AI Support</span>
+              </button>
+            ) : (
+              <div className="w-80 sm:w-96 bg-white rounded-xl shadow-2xl border overflow-hidden flex flex-col h-[480px]">
+                <div className="bg-indigo-700 text-white p-3.5 flex justify-between items-center">
+                  <h4 className="font-bold text-xs">AgriUS AI Assistant</h4>
+                  <button onClick={() => setIsAiOpen(false)} className="font-bold">✕</button>
+                </div>
+                <div className="flex-grow p-3 overflow-y-auto space-y-2 text-xs bg-slate-50">
+                  {aiMessages.map((msg, idx) => (
+                    <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`p-2.5 rounded-lg max-w-[85%] ${msg.sender === 'user' ? 'bg-indigo-600 text-white' : 'bg-white border text-slate-800'}`}>
+                        {msg.text}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-2 border-t bg-white flex gap-2">
+                  <input type="text" placeholder="Ask Agri-AI..." value={aiInput} onChange={(e) => setAiInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAiQuery()} className="flex-grow p-2 border rounded text-xs" />
+                  <button onClick={() => handleAiQuery()} className="bg-indigo-600 text-white px-3 py-2 rounded text-xs font-bold">Ask</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* FOOTER */}
+          <footer className="bg-slate-950 text-slate-400 py-8 text-xs border-t border-slate-900">
+            <div className="max-w-7xl mx-auto px-4 text-center">
+              © 2026 AgriUS Marketplace LLC. Certified On-Site Inspections, Lowboy Carriers & Escrow Protection. All Rights Reserved.
+            </div>
+          </footer>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
 </body>
 </html>
